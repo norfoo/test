@@ -1,0 +1,187 @@
+/* Základní styly */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #0e0b2b 0%, #2a1964 50%, #4e0979 100%);
+    color: #f0f0f0;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Hlavička */
+header {
+    text-align: center;
+    padding: 40px 0;
+    background: linear-gradient(90deg, #300964 0%, #6c22df 50%, #300964 100%);
+    border-radius: 15px;
+    margin-bottom: 40px;
+    box-shadow: 0 0 30px rgba(108, 34, 223, 0.5);
+}
+
+h1 {
+    margin: 0;
+    font-size: 2.5rem;
+    font-weight: bold;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.subtitle {
+    color: #d0d0ff;
+    font-size: 1.2rem;
+    margin-top: 10px;
+}
+
+/* Karty */
+.card {
+    background: rgba(40, 20, 80, 0.7);
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 30px;
+    border: 1px solid rgba(108, 34, 223, 0.3);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+h2 {
+    color: #a992ff;
+    margin-top: 0;
+    border-bottom: 1px solid rgba(108, 34, 223, 0.5);
+    padding-bottom: 10px;
+}
+
+/* Funkce */
+.features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 40px;
+}
+
+.feature-card {
+    background: linear-gradient(135deg, rgba(60, 8, 120, 0.7) 0%, rgba(100, 25, 180, 0.7) 100%);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(180, 155, 255, 0.3);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3), 0 0 15px rgba(108, 34, 223, 0.4);
+}
+
+.feature-title {
+    color: white;
+    font-size: 1.3rem;
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+
+.feature-icon {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+/* Tlačítka */
+.button {
+    display: inline-block;
+    background: linear-gradient(90deg, #6c22df 0%, #9042ff 100%);
+    color: white;
+    padding: 15px 30px;
+    border-radius: 30px;
+    text-decoration: none;
+    font-weight: bold;
+    margin-top: 20px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    border: none;
+    cursor: pointer;
+    font-size: 1.1rem;
+}
+
+.button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4), 0 0 15px rgba(108, 34, 223, 0.6);
+}
+
+.center {
+    text-align: center;
+}
+
+/* Cenové karty */
+.price-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin: 30px 0;
+}
+
+.price-card {
+    background: linear-gradient(135deg, rgba(60, 8, 120, 0.7) 0%, rgba(100, 25, 180, 0.7) 100%);
+    padding: 20px;
+    border-radius: 15px;
+    text-align: center;
+    border: 1px solid rgba(180, 155, 255, 0.3);
+}
+
+.price-title {
+    color: rgba(220, 220, 255, 0.8);
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.price-value {
+    color: white;
+    font-size: 1.8rem;
+    font-weight: bold;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+.price-change-positive {
+    color: #4eff9f;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.price-change-negative {
+    color: #ff6b6b;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+/* Patička */
+footer {
+    text-align: center;
+    padding: 30px 0;
+    margin-top: 50px;
+    border-top: 1px solid rgba(108, 34, 223, 0.5);
+    font-size: 0.9rem;
+    color: #a992ff;
+}
+
+/* Responzivní design */
+@media (max-width: 768px) {
+    h1 {
+        font-size: 1.8rem;
+    }
+    
+    .subtitle {
+        font-size: 1rem;
+    }
+    
+    .feature-card {
+        padding: 15px;
+    }
+    
+    .feature-title {
+        font-size: 1.1rem;
+    }
+}

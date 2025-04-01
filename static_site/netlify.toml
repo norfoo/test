@@ -1,0 +1,20 @@
+# Konfigurace pro Netlify
+
+[build]
+  publish = "/"
+  command = "" # žádný build příkaz, je to statická stránka
+
+# Nastavení cache a HTTP hlaviček
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "no-referrer-when-downgrade"
+
+# Přesměrování pro SPA
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finanční Intelligence Dashboard</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0e0b2b 0%, #2a1964 50%, #4e0979 100%);
+            color: #f0f0f0;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 40px 0;
+            background: linear-gradient(90deg, #300964 0%, #6c22df 50%, #300964 100%);
+            border-radius: 15px;
+            margin-bottom: 40px;
+            box-shadow: 0 0 30px rgba(108, 34, 223, 0.5);
+        }
+        
+        h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+        
+        .subtitle {
+            color: #d0d0ff;
+            font-size: 1.2rem;
+            margin-top: 10px;
+        }
+        
+        .card {
+            background: rgba(40, 20, 80, 0.7);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(108, 34, 223, 0.3);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        h2 {
+            color: #a992ff;
+            margin-top: 0;
+            border-bottom: 1px solid rgba(108, 34, 223, 0.5);
+            padding-bottom: 10px;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 40px;
+        }
+        
+        .feature-card {
+            background: linear-gradient(135deg, rgba(60, 8, 120, 0.7) 0%, rgba(100, 25, 180, 0.7) 100%);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(180, 155, 255, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3), 0 0 15px rgba(108, 34, 223, 0.4);
+        }
+        
+        .feature-title {
+            color: white;
+            font-size: 1.3rem;
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+        
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .button {
+            display: inline-block;
+            background: linear-gradient(90deg, #6c22df 0%, #9042ff 100%);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 20px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+        
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4), 0 0 15px rgba(108, 34, 223, 0.6);
+        }
+        
+        .center {
+            text-align: center;
+        }
+        
+        .screenshot {
+            width: 100%;
+            max-width: 800px;
+            border-radius: 15px;
+            margin: 30px auto;
+            display: block;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(108, 34, 223, 0.3);
+        }
+        
+        .price-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .price-card {
+            background: linear-gradient(135deg, rgba(60, 8, 120, 0.7) 0%, rgba(100, 25, 180, 0.7) 100%);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            border: 1px solid rgba(180, 155, 255, 0.3);
+        }
+        
+        .price-title {
+            color: rgba(220, 220, 255, 0.8);
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        
+        .price-value {
+            color: white;
+            font-size: 1.8rem;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+        
+        .price-change-positive {
+            color: #4eff9f;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        .price-change-negative {
+            color: #ff6b6b;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 30px 0;
+            margin-top: 50px;
+            border-top: 1px solid rgba(108, 34, 223, 0.5);
+            font-size: 0.9rem;
+            color: #a992ff;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+            }
+            
+            .feature-card {
+                padding: 15px;
+            }
+            
+            .feature-title {
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌟 Finanční Intelligence Dashboard 🌟</h1>
+            <div class="subtitle">Pokročilá analýza trhů s využitím umělé inteligence a reálných dat</div>
+        </header>
+        
+        <main>
+            <div class="card">
+                <h2>Vítejte v novém světě obchodování</h2>
+                <p>
+                    Představujeme vám revoluční nástroj pro analýzu finančních trhů, který kombinuje nejmodernější technologie umělé inteligence s propracovanou vizualizací dat. Náš Finanční Intelligence Dashboard vám poskytne komplexní pohled na trh a pomůže vám činit informovaná obchodní rozhodnutí.
+                </p>
+                
+                <div class="price-cards">
+                    <div class="price-card">
+                        <div class="price-title">AKTUÁLNÍ CENA ZLATA</div>
+                        <div class="price-value">3,132.45 USD</div>
+                    </div>
+                    
+                    <div class="price-card">
+                        <div class="price-title">DENNÍ ROZSAH</div>
+                        <div class="price-value" style="font-size: 1.4rem">3,120.77 - 3,145.36</div>
+                    </div>
+                    
+                    <div class="price-card">
+                        <div class="price-title">DENNÍ ZMĚNA</div>
+                        <div class="price-change-positive">↑ 12.56 (+0.42%)</div>
+                    </div>
+                </div>
+                
+                <div class="center">
+                    <a href="https://replit.com/@replit/Financial-Dashboard" class="button">SPUSTIT DASHBOARD</a>
+                </div>
+            </div>
+            
+            <div class="features">
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3 class="feature-title">Interaktivní grafy</h3>
+                    <p>
+                        Pokročilé interaktivní grafy s technickými indikátory pro detailní analýzu cenových pohybů včetně SMA, EMA, RSI, MACD a Bollinger Bands.
+                    </p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🤖</div>
+                    <h3 class="feature-title">AI analytik</h3>
+                    <p>
+                        Integrovaný AI asistent s podporou českého jazyka, který analyzuje trhy a poskytuje specifické obchodní signály s cenovými úrovněmi.
+                    </p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">💹</div>
+                    <h3 class="feature-title">Multi-instrument analýza</h3>
+                    <p>
+                        Sledujte a analyzujte různé finanční nástroje - od forex a komodit po akcie, indexy a ETF. Vše na jednom místě.
+                    </p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">⚙️</div>
+                    <h3 class="feature-title">Porovnání strategií</h3>
+                    <p>
+                        Testujte různé obchodní strategie a porovnávejte jejich výkon na historických datech s vizualizací výsledků.
+                    </p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3 class="feature-title">SMC &amp; ICT signály</h3>
+                    <p>
+                        Pokročilé obchodní signály založené na Smart Money Concepts (SMC) a Inner Circle Trader (ICT) metodologiích.
+                    </p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🔄</div>
+                    <h3 class="feature-title">Data v reálném čase</h3>
+                    <p>
+                        Přístup k aktuálním tržním datům s možností nastavení různých časových rámců pro detailní analýzu.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>Jak začít</h2>
+                <p>
+                    Začít používat náš Finanční Intelligence Dashboard je jednoduché. Stačí kliknout na tlačítko níže a získáte okamžitý přístup ke všem funkcím dashboardu bez nutnosti instalace.
+                </p>
+                
+                <div class="center">
+                    <a href="https://replit.com/@replit/Financial-Dashboard" class="button">PŘEJÍT NA DASHBOARD</a>
+                </div>
+                
+                <p class="center" style="margin-top: 30px; font-size: 0.9rem; color: #a992ff;">
+                    Pro plnou funkčnost aplikace budete potřebovat API klíče z <a href="https://twelvedata.com/" style="color: #d0d0ff;">Twelve Data</a> a <a href="https://ai.google.dev/" style="color: #d0d0ff;">Google Gemini</a>.
+                </p>
+            </div>
+        </main>
+        
+        <footer>
+            &copy; 2025 Finanční Intelligence Dashboard | Vytvořeno s ❤️ pro lepší obchodování
+        </footer>
+    </div>
+</body>
+</html>
