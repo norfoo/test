@@ -824,6 +824,7 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "google-generativeai" },
+    { name = "numpy" },
     { name = "pandas" },
     { name = "plotly" },
     { name = "requests" },
@@ -833,6 +834,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "google-generativeai", specifier = ">=0.8.4" },
+    { name = "numpy", specifier = ">=2.2.4" },
     { name = "pandas", specifier = ">=2.2.3" },
     { name = "plotly", specifier = ">=6.0.1" },
     { name = "requests", specifier = ">=2.32.3" },
