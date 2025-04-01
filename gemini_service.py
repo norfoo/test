@@ -264,49 +264,76 @@ def get_financial_analysis(
                         - RSI(14): {latest['rsi_14']:.2f} ({"Překoupený" if latest['rsi_14'] > 70 else "Přeprodaný" if latest['rsi_14'] < 30 else "Neutrální"})
                         """
             
-            # Instrukce pro multi-timeframe analýzu s konkrétními obchodními signály
+            # Instrukce pro multi-timeframe analýzu s konkrétními obchodními signály založenými na pokročilých konceptech
             prompt += """
-            Proveď MULTI-TIMEFRAME ANALÝZU a poskytni následující:
+            Proveď MULTI-TIMEFRAME ANALÝZU pomocí pokročilých obchodních konceptů a poskytni následující:
             
             1. Shrnutí aktuální situace na trhu:
                - Analýza hlavního trendu na denním (D1) timeframe
-               - Porovnání s klíčovými úrovněmi z denního grafu (daily open, close, high, low)
-               - Určení nejdůležitějších supportů a rezistencí z vyšších timeframů (H4 a D1)
+               - Identifikace klíčových HTF (Higher Time Frame) úrovní a struktury trhu
+               - Určení hlavních supply/demand zón a order bloků (OB) z D1 a H4 timeframu
             
-            2. Detailní technická analýza na H1 (hodinovém) timeframe:
-               - Identifikace krátkodobého trendu
-               - Klíčové cenové formace (svíčkové vzory, trojúhelníky, hlavy a ramena, apod.)
-               - Momentové indikátory a divergence
+            2. SMC/ICT analýza na H1 (hodinovém) timeframe:
+               - Identifikace FVG (Fair Value Gap), BOS (Break of Structure), CHOCH (Change of Character)
+               - Liquidity sweep/grab (PWH - Previous Week High, PWL - Previous Week Low)
+               - Imbalance (IMB) a mitigation
+               - ICT koncepty - OTE (Optimal Trade Entry), BPR (Buy-side/Sell-side Premium Zones)
             
             3. KONKRÉTNÍ OBCHODNÍ SIGNÁLY PRO 5M TIMEFRAME:
                - Doporučení pro NÁKUP nebo PRODEJ (případně VYČKÁNÍ)
-               - PŘESNÁ vstupní cena (na základě 5M grafu)
-               - PŘESNÁ cena pro stoploss (na základě 5M grafu)
+               - PŘESNÁ vstupní cena založená na:
+                  * SMC/ICT konceptech (POI - Point of Interest, IFC - Institutional Flow Concepts)
+                  * Order block (OB) nebo Fair Value Gap (FVG)
+                  * IPA (Institutional Price Action) a BOS/FBOS (Break/Fake Break of Structure)
+                  * SOW/SOS (Sign of Weakness/Strength)
+            
+               - PŘESNÁ cena pro stoploss (na základě SMC/ICT konceptů):
+                  * SL MUSÍ být umístěn za úrovněmi likvidity (LQD)
+                  * SL MUSÍ být za BSL/SSL (Buy/Sell Side Liquidity) nebo order blokem
                   * SL MUSÍ být minimálně 2 body od vstupní ceny
-                  * SL MUSÍ být umístěn pod/nad úrovněmi likvidity, order bloků, EMA nebo supportu/rezistence
-                  * SL MUSÍ být pod knotem z likvidity poolu/sweepu
-               - PŘESNÉ cíle zisku založené na VYŠŠÍCH TIMEFRAMECH:
-                  * TP1: krátkodobý cíl (založený na H1 timeframe) - minimálně 40 pipů (4 body) od vstupní ceny
-                  * TP2: střednědobý cíl (založený na H4 timeframe)
-                  * TP3: dlouhodobý cíl (založený na D1 timeframe, ale s očekáváním dosažení do 3 hodin)
+                  * SL MUSÍ respektovat D2S/S2D (Demand to Supply, Supply to Demand) logiku
+            
+               - PŘESNÉ cíle zisku založené na SMC/ICT:
+                  * TP1: krátkodobý cíl (založený na nejbližším FVG/IMB) - minimálně 40 pipů (4 body) od vstupní ceny
+                  * TP2: střednědobý cíl (založený na EQH/EQL - Equal High/Low nebo HTF FVG)
+                  * TP3: dlouhodobý cíl (založený na main HTF supply/demand zónách, OB, FVG, IMB)
+               
                - Výpočet poměru rizika k zisku (Risk:Reward ratio) - VŽDY DOPORUČUJ POUZE OBCHODY S POMĚREM RIZIKA K ZISKU MINIMÁLNĚ 1:2,5
             
-            4. Rizikové faktory a poznámky:
-               - Konflikty mezi různými timeframy
-               - Významné úrovně, které mohou ovlivnit obchod v následujících 3 hodinách
+            4. SMC/ICT rizikové faktory a poznámky:
+               - Manipulace likvidity (liquidity engineering)
+               - Stop hunts a smart money flow
                - Doporučení pro částečné uzavírání pozice na jednotlivých TP úrovních
+               - Respektování TL (Trendline) a SnR (Support/Resistance)
             
             Formátuj výstup pomocí markdown a používej vhodné nadpisy a odrážky pro přehlednost.
             Odpověz v češtině. Buď konkrétní a přesný, zejména v číslech pro vstup, stoploss a take profit.
             
-            DŮLEŽITÉ PARAMETRY:
-            - Vstup a SL určuj na základě 5M grafu
-            - SL MUSÍ být minimálně 2 body od vstupní ceny a pod úrovněmi likvidity/supportu
+            DŮLEŽITÉ PARAMETRY & VYSVĚTLENÍ ZKRATEK:
+            - SMC = Smart Money Concept
+            - ICT = Inner Circle Trader metodologie
+            - OB = Order Block (oblasti, kde instituce vstupují do trhu)
+            - FVG = Fair Value Gap (mezera v ceně, která bude pravděpodobně vyplněna)
+            - IMB = Imbalance (nerovnováha v order flow)
+            - BOS/FBOS = Break/Fake Break of Structure (průlom/falešný průlom struktury)
+            - CHOCH = Change of Character (změna charakteru ceny, často následuje po akumulaci)
+            - HTF/LTF = Higher/Lower Time Frame (vyšší/nižší časový rámec)
+            - EQH/EQL = Equal High/Low (stejné vrcholy/dna - cílové oblasti)
+            - POI = Point of Interest (oblast zájmu pro vstup)
+            - SnR = Support/Resistance (podpora/odpor)
+            - D2S/S2D = Demand to Supply, Supply to Demand (oblasti přechodu z poptávky do nabídky a naopak)
+            - BSL/SSL = Buy Side Liquidity / Sell Side Liquidity (likvidita pro nákupy/prodeje)
+            - TL = Trendline (trendová linie)
+            - PWH/PWL = Previous Week High/Low (high/low předchozího týdne)
+            - SOW/SOS = Sign of Weakness/Strength (známka slabosti/síly)
+            - LQD = Liquidity (likvidita - oblasti stop lossů)
+            
+            - Vstup a SL určuj přesně na základě SMC/ICT konceptů z 5M grafu
+            - SL MUSÍ být za likviditou, OB nebo FVG
             - TP1 MUSÍ být minimálně 40 pipů (4 body) od vstupní ceny
-            - Take-profit cíle urči na základě analýzy vyšších timeframů (H1, H4, D1)
             - Doporučuj POUZE obchody s min. poměrem rizika k zisku 1:2,5
             - Předpokládej max. trvání obchodu 3 hodiny
-            - Pokud aktuální situace neumožňuje vhodný setup, doporuč VYČKÁNÍ
+            - Pokud aktuální situace neumožňuje vhodný ICT/SMC setup, doporuč VYČKÁNÍ
             """
             
             # Získáme odpověď
