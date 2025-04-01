@@ -2,6 +2,7 @@ import os
 import google.generativeai as genai
 from typing import Optional, Dict, Any, List
 import time
+import pandas as pd
 
 # Načtení API klíče z Replit Secrets
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
@@ -184,7 +185,29 @@ def get_financial_analysis(
                 # Přidání historických dat
                 data_lines = []
                 for index, row in recent_data.iterrows():
-                    data_lines.append(f"{row['datetime'].strftime('%Y-%m-%d %H:%M')}: O: {row['open']:.2f}, H: {row['high']:.2f}, L: {row['low']:.2f}, C: {row['close']:.2f}, Vol: {row.get('volume', 'N/A')}")
+                    # Ošetření správného formátu datumu (může být ve sloupci 'date' nebo 'datetime')
+                    date_str = ""
+                    if 'date' in row and pd.notna(row['date']):
+                        if isinstance(row['date'], str):
+                            date_str = row['date']
+                        else:
+                            try:
+                                date_str = row['date'].strftime('%Y-%m-%d %H:%M')
+                            except:
+                                date_str = str(row['date'])
+                    elif 'datetime' in row and pd.notna(row['datetime']):
+                        if isinstance(row['datetime'], str):
+                            date_str = row['datetime']
+                        else:
+                            try:
+                                date_str = row['datetime'].strftime('%Y-%m-%d %H:%M')
+                            except:
+                                date_str = str(row['datetime'])
+                    else:
+                        date_str = "N/A"
+                    
+                    # Formátování datového řádku
+                    data_lines.append(f"{date_str}: O: {row['open']:.2f}, H: {row['high']:.2f}, L: {row['low']:.2f}, C: {row['close']:.2f}, Vol: {row.get('volume', 'N/A')}")
                 
                 prompt += "\n".join(reversed(data_lines[-20:]))  # Posledních 20 řádků v opačném pořadí (nejnovější nahoře)
                     
