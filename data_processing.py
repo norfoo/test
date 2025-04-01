@@ -181,17 +181,19 @@ def get_timeframes() -> List[Dict[str, str]]:
         Seznam časových rámců
     """
     timeframes = [
+        {"id": "5min", "name": "5 minut (aktuální)"}, # Nastavíme 5min jako první volbu
         {"id": "1day", "name": "Denní"},
         {"id": "1week", "name": "Týdenní"},
         {"id": "1month", "name": "Měsíční"},
         {"id": "1h", "name": "Hodinový"},
         {"id": "4h", "name": "4 hodiny"},
         {"id": "15min", "name": "15 minut"},
-        {"id": "5min", "name": "5 minut"},
         {"id": "1min", "name": "1 minuta"}
     ]
     
     return timeframes
+
+
 
 def search_local_instruments(query: str, instruments: List[Dict[str, str]]) -> List[Dict[str, str]]:
     """
