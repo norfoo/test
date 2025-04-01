@@ -42,9 +42,9 @@ display_api_status(api_status)
 if 'selected_category' not in st.session_state:
     st.session_state.selected_category = "commodities"
 if 'selected_symbol' not in st.session_state:
-    st.session_state.selected_symbol = "GOLD"
+    st.session_state.selected_symbol = "I:XAUUSD"
 if 'selected_timeframe' not in st.session_state:
-    st.session_state.selected_timeframe = "5min"
+    st.session_state.selected_timeframe = "1day"
 if 'search_query' not in st.session_state:
     st.session_state.search_query = ""
 if 'quote_data' not in st.session_state:

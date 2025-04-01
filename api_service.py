@@ -263,9 +263,10 @@ def get_commodities() -> List[Dict[str, str]]:
         Seznam dostupných komodit nebo prázdný seznam v případě chyby
     """
     # Použijeme nejběžnější komodity dostupné na free plánu Twelve Data API
+    # Zlato je dostupné pod symbolem "I:XAUUSD" (index), což funguje lépe než GOLD nebo XAU/USD
     common_commodities = [
-        {"symbol": "GOLD", "name": "Zlato (GOLD)", "currency": "USD", "exchange": "FOREX", "mic_code": "FOREX", "country": "United States"},
-        {"symbol": "SILVER", "name": "Stříbro (SILVER)", "currency": "USD", "exchange": "FOREX", "mic_code": "FOREX", "country": "United States"},
+        {"symbol": "I:XAUUSD", "name": "Zlato (XAUUSD)", "currency": "USD", "exchange": "INDEX", "mic_code": "INDEX", "country": "United States"},
+        {"symbol": "I:XAGUSD", "name": "Stříbro (XAGUSD)", "currency": "USD", "exchange": "INDEX", "mic_code": "INDEX", "country": "United States"},
         {"symbol": "COPPER", "name": "Měď (COPPER)", "currency": "USD", "exchange": "COMEX", "mic_code": "XCEC", "country": "United States"},
         {"symbol": "BRENT", "name": "Ropa Brent", "currency": "USD", "exchange": "ICE", "mic_code": "IFEU", "country": "United Kingdom"},
         {"symbol": "WTI", "name": "Ropa WTI", "currency": "USD", "exchange": "NYMEX", "mic_code": "XNYM", "country": "United States"},

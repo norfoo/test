@@ -141,8 +141,10 @@ def get_financial_analysis(
             
             # Určení typu instrumentu pro lepší analýzu
             instrument_type = "komodita"
-            if symbol == "GOLD":
+            if symbol == "I:XAUUSD" or symbol == "GOLD" or symbol == "XAU/USD":
                 instrument_type = "zlato"
+            elif symbol == "I:XAGUSD" or symbol == "SILVER" or symbol == "XAG/USD":
+                instrument_type = "stříbro"
             elif "/" in symbol:
                 instrument_type = "měnový pár"
             elif symbol in ["AAPL", "MSFT", "GOOG", "AMZN"]:
