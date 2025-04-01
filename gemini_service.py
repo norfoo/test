@@ -121,12 +121,13 @@ def get_financial_analysis(
 ) -> Optional[str]:
     """
     Získá finanční analýzu a doporučení pro daný symbol od Gemini AI.
-    Nyní používá pouze reálná data a poskytuje konkrétní obchodní signály.
+    Používá multi-timeframe analýzu s daty z 5M, H1, H4 a D1 timeframů.
+    Poskytuje konkrétní obchodní signály s cíli zisku odvozenými z vyšších timeframů.
     
     Args:
         symbol: Ticker symbolu (např. 'EUR/USD', 'AAPL')
         price_data: Slovník s daty o aktuální kotaci
-        historical_data: DataFrame s historickými daty (volitelný)
+        historical_data: DataFrame s historickými daty z 5M timeframe (volitelný)
         model_name: Název modelu Gemini, který se má použít
         
     Returns:
@@ -263,31 +264,44 @@ def get_financial_analysis(
                         - RSI(14): {latest['rsi_14']:.2f} ({"Překoupený" if latest['rsi_14'] > 70 else "Přeprodaný" if latest['rsi_14'] < 30 else "Neutrální"})
                         """
             
-            # Instrukce pro detailní analýzu s konkrétními obchodními signály
+            # Instrukce pro multi-timeframe analýzu s konkrétními obchodními signály
             prompt += """
-            Poskytni následující analýzu pro 5-minutový timeframe:
+            Proveď MULTI-TIMEFRAME ANALÝZU a poskytni následující:
             
-            1. Shrnutí aktuální situace na trhu
-            2. Detailní technická analýza:
-               - Identifikace hlavního trendu
-               - Přesné úrovně podpory a odporu
+            1. Shrnutí aktuální situace na trhu:
+               - Analýza hlavního trendu na denním (D1) timeframe
+               - Porovnání s klíčovými úrovněmi z denního grafu (daily open, close, high, low)
+               - Určení nejdůležitějších supportů a rezistencí z vyšších timeframů (H4 a D1)
+            
+            2. Detailní technická analýza na H1 (hodinovém) timeframe:
+               - Identifikace krátkodobého trendu
                - Klíčové cenové formace (svíčkové vzory, trojúhelníky, hlavy a ramena, apod.)
                - Momentové indikátory a divergence
             
             3. KONKRÉTNÍ OBCHODNÍ SIGNÁLY PRO 5M TIMEFRAME:
-               - Doporučení pro NÁKUP nebo PRODEJ, případně VYČKÁNÍ
-               - PŘESNÁ vstupní cena
-               - PŘESNÁ cena pro stoploss
-               - PŘESNÉ cíle pro zisk (take profit 1, 2, 3)
+               - Doporučení pro NÁKUP nebo PRODEJ (případně VYČKÁNÍ)
+               - PŘESNÁ vstupní cena (na základě 5M grafu)
+               - PŘESNÁ cena pro stoploss (na základě 5M grafu)
+               - PŘESNÉ cíle zisku založené na VYŠŠÍCH TIMEFRAMECH:
+                  * TP1: krátkodobý cíl (založený na H1 timeframe)
+                  * TP2: střednědobý cíl (založený na H4 timeframe)
+                  * TP3: dlouhodobý cíl (založený na D1 timeframe, ale s očekáváním dosažení do 3 hodin)
                - Výpočet poměru rizika k zisku (Risk:Reward ratio) - VŽDY DOPORUČUJ POUZE OBCHODY S POMĚREM RIZIKA K ZISKU MINIMÁLNĚ 1:2,5
             
-            4. Rizikové faktory, které mohou ovlivnit tento obchod
+            4. Rizikové faktory a poznámky:
+               - Konflikty mezi různými timeframy
+               - Významné úrovně, které mohou ovlivnit obchod v následujících 3 hodinách
+               - Doporučení pro částečné uzavírání pozice na jednotlivých TP úrovních
             
             Formátuj výstup pomocí markdown a používej vhodné nadpisy a odrážky pro přehlednost.
             Odpověz v češtině. Buď konkrétní a přesný, zejména v číslech pro vstup, stoploss a take profit.
-            Nezapomeň, že analýza je pro 5-minutový timeframe a obchodník potřebuje přesné hodnoty, ne obecná doporučení.
             
-            DŮLEŽITÉ: Doporučuj POUZE obchody, které mají MINIMÁLNÍ poměr rizika k zisku 1:2,5. Pokud aktuální situace neumožňuje takový poměr, doporuč VYČKÁNÍ na lepší příležitost a vysvětli, na jaké cenové úrovně čekat.
+            DŮLEŽITÉ PARAMETRY:
+            - Vstup a SL určuj na základě 5M grafu
+            - Take-profit cíle urči na základě analýzy vyšších timeframů (H1, H4, D1)
+            - Doporučuj POUZE obchody s min. poměrem rizika k zisku 1:2,5
+            - Předpokládej max. trvání obchodu 3 hodiny
+            - Pokud aktuální situace neumožňuje vhodný setup, doporuč VYČKÁNÍ
             """
             
             # Získáme odpověď
