@@ -21,6 +21,7 @@ from gemini_service import (
     check_gemini_api_key, get_chat_response, get_financial_analysis,
     get_available_models
 )
+from strategy_comparison import strategy_comparison_app
 
 # Konfigurace stránky
 st.set_page_config(
@@ -454,6 +455,29 @@ if st.session_state.auto_refresh:
         #     </script>
         #     """, unsafe_allow_html=True)
 
+# Navigační lišta pro přepínání mezi dashboardem a nástrojem pro porovnání strategií
+st.markdown("---")
+
+# Přidání menu pro přepínání mezi nástroji
+st.sidebar.markdown("---")
+st.sidebar.header("Navigace")
+app_mode = st.sidebar.radio(
+    "Výběr aplikace",
+    ["📈 Dashboard", "🧪 Porovnání strategií"]
+)
+
+# Skrytí obsahu dashboardu, pokud je vybrán nástroj pro porovnání strategií
+if app_mode == "🧪 Porovnání strategií":
+    # Skryjeme předchozí obsah
+    st.markdown("""
+    <style>
+    div.block-container {display: none;}
+    </style>
+    """, unsafe_allow_html=True)
+    
+    # Zobrazíme nový obsah
+    strategy_comparison_app()
+    
 # Patička
 st.markdown("---")
 st.caption("Data poskytována službou [Twelve Data](https://twelvedata.com/) | AI asistent powered by [Google Gemini](https://ai.google.dev/)")

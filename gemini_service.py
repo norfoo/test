@@ -282,8 +282,11 @@ def get_financial_analysis(
                - Doporučení pro NÁKUP nebo PRODEJ (případně VYČKÁNÍ)
                - PŘESNÁ vstupní cena (na základě 5M grafu)
                - PŘESNÁ cena pro stoploss (na základě 5M grafu)
+                  * SL MUSÍ být minimálně 2 body od vstupní ceny
+                  * SL MUSÍ být umístěn pod/nad úrovněmi likvidity, order bloků, EMA nebo supportu/rezistence
+                  * SL MUSÍ být pod knotem z likvidity poolu/sweepu
                - PŘESNÉ cíle zisku založené na VYŠŠÍCH TIMEFRAMECH:
-                  * TP1: krátkodobý cíl (založený na H1 timeframe)
+                  * TP1: krátkodobý cíl (založený na H1 timeframe) - minimálně 40 pipů (4 body) od vstupní ceny
                   * TP2: střednědobý cíl (založený na H4 timeframe)
                   * TP3: dlouhodobý cíl (založený na D1 timeframe, ale s očekáváním dosažení do 3 hodin)
                - Výpočet poměru rizika k zisku (Risk:Reward ratio) - VŽDY DOPORUČUJ POUZE OBCHODY S POMĚREM RIZIKA K ZISKU MINIMÁLNĚ 1:2,5
@@ -298,6 +301,8 @@ def get_financial_analysis(
             
             DŮLEŽITÉ PARAMETRY:
             - Vstup a SL určuj na základě 5M grafu
+            - SL MUSÍ být minimálně 2 body od vstupní ceny a pod úrovněmi likvidity/supportu
+            - TP1 MUSÍ být minimálně 40 pipů (4 body) od vstupní ceny
             - Take-profit cíle urči na základě analýzy vyšších timeframů (H1, H4, D1)
             - Doporučuj POUZE obchody s min. poměrem rizika k zisku 1:2,5
             - Předpokládej max. trvání obchodu 3 hodiny
