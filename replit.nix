@@ -1,6 +1,5 @@
 {pkgs}: {
   deps = [
-    pkgs.wget
     pkgs.tk
     pkgs.tcl
     pkgs.qhull
