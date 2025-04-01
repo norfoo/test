@@ -359,11 +359,28 @@ else:
                 st.chat_message("assistant", avatar="🤖").write(message["content"])
         
         # Vstupní pole pro chat
-        st.chat_input(
-            "Napište zprávu...",
-            key="chat_input",
-            on_submit=on_chat_submit
-        )
+        user_input = st.chat_input("Napište zprávu...")
+        if user_input:
+            # Přidání zprávy uživatele do historie
+            st.session_state.chat_messages.append({"role": "user", "content": user_input})
+            
+            # Získání odpovědi od AI
+            ai_response = get_chat_response(
+                st.session_state.chat_messages,
+                model_name=st.session_state.gemini_model
+            )
+            
+            if ai_response:
+                # Přidání odpovědi AI do historie
+                st.session_state.chat_messages.append({"role": "assistant", "content": ai_response})
+            else:
+                # Přidání zprávy o chybě
+                st.session_state.chat_messages.append(
+                    {"role": "assistant", "content": "Omlouvám se, ale nepodařilo se získat odpověď. Zkontrolujte, prosím, zda je nastaven platný API klíč pro Gemini."}
+                )
+            
+            # Vyvolání překreslení stránky
+            st.rerun()
     
     # Záložka s analýzou
     with analysis_tab:
@@ -380,6 +397,62 @@ else:
             st.info("Klikněte na tlačítko 'Získat AI analýzu' pro vygenerování analýzy vybraného instrumentu.")
         
         st.caption("Analýza je generována pomocí umělé inteligence a má pouze informativní charakter. Nejedná se o investiční doporučení.")
+
+# Automatické obnovování dat v reálném čase
+if "auto_refresh" not in st.session_state:
+    st.session_state.auto_refresh = False
+if "refresh_interval" not in st.session_state:
+    st.session_state.refresh_interval = 60  # výchozí interval obnovení v sekundách
+
+with st.sidebar:
+    st.markdown("---")
+    st.subheader("Automatické obnovování")
+    
+    auto_refresh = st.checkbox("Povolit automatické obnovování dat", value=st.session_state.auto_refresh)
+    
+    if auto_refresh != st.session_state.auto_refresh:
+        st.session_state.auto_refresh = auto_refresh
+        # Při změně stavu obnovíme stránku
+        st.rerun()
+    
+    refresh_interval = st.slider(
+        "Interval obnovení (sekundy)",
+        min_value=5,
+        max_value=300,
+        value=st.session_state.refresh_interval,
+        step=5
+    )
+    
+    if refresh_interval != st.session_state.refresh_interval:
+        st.session_state.refresh_interval = refresh_interval
+        # Při změně intervalu obnovíme stránku
+        st.rerun()
+    
+    # Informace o příštím obnovení
+    if st.session_state.auto_refresh and st.session_state.last_refresh:
+        next_refresh = st.session_state.last_refresh + st.session_state.refresh_interval
+        time_to_refresh = max(0, next_refresh - time.time())
+        st.text(f"Příští obnovení za: {int(time_to_refresh)} s")
+
+# Automatické obnovení pomocí JavaScript
+if st.session_state.auto_refresh:
+    # Přepočítáme zbývající čas do příštího obnovení
+    if st.session_state.last_refresh:
+        next_refresh = st.session_state.last_refresh + st.session_state.refresh_interval
+        time_to_refresh = max(0, next_refresh - time.time())
+        # Pouze pokud je čas k dalšímu obnovení menší než interval, obnovíme
+        if time_to_refresh <= 0:
+            update_data()  # Obnovíme data
+            # Pokud nejsme na stránce, nastane obnovení při příštím načtení
+        
+        # JavaScript pro automatické obnovení stránky po uplynutí času
+        # ms_to_refresh = int(time_to_refresh * 1000)
+        # if ms_to_refresh > 0:
+        #     st.markdown(f"""
+        #     <script>
+        #         setTimeout(function(){{ window.location.reload(); }}, {ms_to_refresh});
+        #     </script>
+        #     """, unsafe_allow_html=True)
 
 # Patička
 st.markdown("---")

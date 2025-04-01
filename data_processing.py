@@ -91,7 +91,7 @@ def prepare_ohlc_data(df: pd.DataFrame) -> pd.DataFrame:
 
 def calculate_technical_indicators(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Vypočítá technické indikátory.
+    Vypočítá technické indikátory pro obchodní analýzu.
     
     Args:
         df: DataFrame s historickými daty
@@ -105,20 +105,60 @@ def calculate_technical_indicators(df: pd.DataFrame) -> pd.DataFrame:
     # Kopie DataFrame
     result = df.copy()
     
-    # 50-denní jednoduchý klouzavý průměr (SMA)
-    result['SMA_50'] = result['close'].rolling(window=50, min_periods=1).mean()
+    # Klouzavé průměry (SMA)
+    # Krátké období pro 5-minutový timeframe
+    result['sma_9'] = result['close'].rolling(window=9, min_periods=1).mean()
+    result['sma_20'] = result['close'].rolling(window=20, min_periods=1).mean()
+    result['sma_50'] = result['close'].rolling(window=50, min_periods=1).mean()
     
-    # 200-denní jednoduchý klouzavý průměr (SMA)
-    result['SMA_200'] = result['close'].rolling(window=200, min_periods=1).mean()
+    # Exponenciální klouzavé průměry (EMA)
+    # Vysoká citlivost pro 5-minutový timeframe
+    result['ema_9'] = result['close'].ewm(span=9, adjust=False).mean()
+    result['ema_20'] = result['close'].ewm(span=20, adjust=False).mean()
+    result['ema_50'] = result['close'].ewm(span=50, adjust=False).mean()
     
-    # 14-denní relativní síla indexu (RSI)
+    # 14-intervalový relativní síla indexu (RSI)
     delta = result['close'].diff()
     gain = delta.where(delta > 0, 0)
     loss = -delta.where(delta < 0, 0)
     avg_gain = gain.rolling(window=14, min_periods=1).mean()
     avg_loss = loss.rolling(window=14, min_periods=1).mean()
     rs = avg_gain / avg_loss
-    result['RSI_14'] = 100 - (100 / (1 + rs))
+    result['rsi_14'] = 100 - (100 / (1 + rs))
+    
+    # Bollinger Bands (20, 2)
+    # Standardní nastavení vhodné i pro 5-minutový timeframe
+    sma_20 = result['close'].rolling(window=20, min_periods=1).mean()
+    std_20 = result['close'].rolling(window=20, min_periods=1).std()
+    result['bb_upper'] = sma_20 + (std_20 * 2)
+    result['bb_middle'] = sma_20
+    result['bb_lower'] = sma_20 - (std_20 * 2)
+    
+    # MACD (Moving Average Convergence Divergence)
+    # Standardní nastavení (12, 26, 9)
+    result['ema_12'] = result['close'].ewm(span=12, adjust=False).mean()
+    result['ema_26'] = result['close'].ewm(span=26, adjust=False).mean()
+    result['macd'] = result['ema_12'] - result['ema_26']
+    result['macd_signal'] = result['macd'].ewm(span=9, adjust=False).mean()
+    result['macd_hist'] = result['macd'] - result['macd_signal']
+    
+    # Stochastic Oscillator (14, 3, 3)
+    # Rychlý stochastický oscilátor
+    low_14 = result['low'].rolling(window=14).min()
+    high_14 = result['high'].rolling(window=14).max()
+    result['stoch_k'] = 100 * ((result['close'] - low_14) / (high_14 - low_14))
+    result['stoch_d'] = result['stoch_k'].rolling(window=3).mean()
+    
+    # Volume Weighted Average Price (VWAP) - pokud jsou k dispozici data o objemu
+    if 'volume' in result.columns and result['volume'].sum() > 0:
+        result['vwap'] = (result['volume'] * (result['high'] + result['low'] + result['close']) / 3).cumsum() / result['volume'].cumsum()
+    
+    # Average True Range (ATR) - pro nastavení stop-loss
+    tr1 = result['high'] - result['low']
+    tr2 = (result['high'] - result['close'].shift()).abs()
+    tr3 = (result['low'] - result['close'].shift()).abs()
+    tr = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)
+    result['atr_14'] = tr.rolling(window=14).mean()
     
     return result
 

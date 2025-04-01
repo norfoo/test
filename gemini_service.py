@@ -120,6 +120,7 @@ def get_financial_analysis(
 ) -> Optional[str]:
     """
     Získá finanční analýzu a doporučení pro daný symbol od Gemini AI.
+    Nyní používá pouze reálná data a poskytuje konkrétní obchodní signály.
     
     Args:
         symbol: Ticker symbolu (např. 'EUR/USD', 'AAPL')
@@ -150,22 +151,118 @@ def get_financial_analysis(
             elif symbol in ["AAPL", "MSFT", "GOOG", "AMZN"]:
                 instrument_type = "akcie"
             
-            # Sestavíme prompt pro AI
+            # Aktuální cena a základní údaje
+            current_price = price_data.get('close', price_data.get('price', 0))
+            
+            # Sestavíme detailní prompt s reálnými daty pro AI
             prompt = f"""
-            Proveď finanční analýzu pro {symbol} ({instrument_type}) na základě těchto údajů:
+            Jsi profesionální obchodník a finanční analytik se zaměřením na trhy.
+            Poskytni detailní analýzu s konkrétními obchodními signály pro {symbol} ({instrument_type}).
             
-            Aktuální cena: {price_data.get('close', price_data.get('price', 'Nedostupná'))}
-            Změna: {price_data.get('change', 'Nedostupná')}
-            Procentuální změna: {price_data.get('percent_change', 'Nedostupná')}
-            Časový rámec: 5-minutový graf
+            Aktuální reálná data:
+            - Aktuální cena: {current_price} {price_data.get('currency', 'USD')}
+            - Změna: {price_data.get('percent_change', 0)}%
+            - Otevírací cena: {price_data.get('open', 0)}
+            - Nejvyšší cena: {price_data.get('high', 0)}
+            - Nejnižší cena: {price_data.get('low', 0)}
+            - Předchozí zavírací cena: {price_data.get('previous_close', 0)}
+            - Datum/čas: {price_data.get('datetime', 'Není k dispozici')}
+            """
             
-            Poskytni základní analýzu aktuální situace, možné faktory ovlivňující cenu a krátkodobý výhled.
-            Zaměř se na informace užitečné pro běžného investora.
+            # Přidání historických dat, pokud jsou k dispozici
+            if historical_data is not None and not historical_data.empty:
+                # Získáme více záznamů pro lepší analýzu
+                max_rows = 30
+                
+                # Získáme nejnovější záznamy
+                recent_data = historical_data.tail(max_rows)
+                
+                prompt += """
+                Poslední historická data (nejnovější nahoře):
+                """
+                
+                # Přidání historických dat
+                data_lines = []
+                for index, row in recent_data.iterrows():
+                    data_lines.append(f"{row['datetime'].strftime('%Y-%m-%d %H:%M')}: O: {row['open']:.2f}, H: {row['high']:.2f}, L: {row['low']:.2f}, C: {row['close']:.2f}, Vol: {row.get('volume', 'N/A')}")
+                
+                prompt += "\n".join(reversed(data_lines[-20:]))  # Posledních 20 řádků v opačném pořadí (nejnovější nahoře)
+                    
+                # Výpočet některých technických indikátorů
+                # Průměrná změna za posledních N období
+                if len(historical_data) > 1:
+                    price_changes = historical_data['close'].pct_change().dropna()
+                    avg_change = price_changes.mean() * 100
+                    volatility = price_changes.std() * 100
+                    
+                    # Výpočet klíčových úrovní podpory a odporu
+                    last_price = historical_data['close'].iloc[-1]
+                    recent_highs = historical_data['high'].tail(30)
+                    recent_lows = historical_data['low'].tail(30)
+                    
+                    # Najdeme lokální maxima a minima
+                    resistance_levels = sorted([price for price in recent_highs if price > last_price])[:3]
+                    support_levels = sorted([price for price in recent_lows if price < last_price], reverse=True)[:3]
+                    
+                    prompt += f"""
+                    Technické ukazatele (5-minutový timeframe):
+                    - Průměrná procentuální změna: {avg_change:.4f}%
+                    - Volatilita (směrodatná odchylka): {volatility:.4f}%
+                    """
+                    
+                    # Přidání úrovní podpory a odporu
+                    if resistance_levels:
+                        prompt += f"- Úrovně odporu (resistance): {', '.join([f'{level:.2f}' for level in resistance_levels])}\n"
+                    if support_levels:
+                        prompt += f"- Úrovně podpory (support): {', '.join([f'{level:.2f}' for level in support_levels])}\n"
+                    
+                    # Přidání SMA a EMA, pokud jsou k dispozici
+                    if 'sma_20' in historical_data.columns and 'sma_50' in historical_data.columns:
+                        latest = historical_data.iloc[-1]
+                        prompt += f"""
+                        - SMA 20: {latest['sma_20']:.2f}
+                        - SMA 50: {latest['sma_50']:.2f}
+                        - SMA křížení: {"SMA 20 nad SMA 50 (býčí)" if latest['sma_20'] > latest['sma_50'] else "SMA 50 nad SMA 20 (medvědí)"}
+                        """
+                    
+                    if 'ema_20' in historical_data.columns and 'ema_50' in historical_data.columns:
+                        latest = historical_data.iloc[-1]
+                        prompt += f"""
+                        - EMA 20: {latest['ema_20']:.2f}
+                        - EMA 50: {latest['ema_50']:.2f}
+                        - EMA křížení: {"EMA 20 nad EMA 50 (býčí)" if latest['ema_20'] > latest['ema_50'] else "EMA 50 nad EMA 20 (medvědí)"}
+                        """
+                    
+                    # RSI pokud je k dispozici
+                    if 'rsi_14' in historical_data.columns:
+                        latest = historical_data.iloc[-1]
+                        prompt += f"""
+                        - RSI(14): {latest['rsi_14']:.2f} ({"Překoupený" if latest['rsi_14'] > 70 else "Přeprodaný" if latest['rsi_14'] < 30 else "Neutrální"})
+                        """
             
-            Odpověz v českém jazyce a rozděl odpověď do sekcí:
-            1. Shrnutí aktuální situace (2-3 věty)
-            2. Klíčové faktory ovlivňující cenu (2-3 body)
-            3. Krátkodobý výhled (1-2 věty)
+            # Instrukce pro detailní analýzu s konkrétními obchodními signály
+            prompt += """
+            Poskytni následující analýzu pro 5-minutový timeframe:
+            
+            1. Shrnutí aktuální situace na trhu
+            2. Detailní technická analýza:
+               - Identifikace hlavního trendu
+               - Přesné úrovně podpory a odporu
+               - Klíčové cenové formace (svíčkové vzory, trojúhelníky, hlavy a ramena, apod.)
+               - Momentové indikátory a divergence
+            
+            3. KONKRÉTNÍ OBCHODNÍ SIGNÁLY PRO 5M TIMEFRAME:
+               - Doporučení pro NÁKUP nebo PRODEJ, případně VYČKÁNÍ
+               - PŘESNÁ vstupní cena
+               - PŘESNÁ cena pro stoploss
+               - PŘESNÉ cíle pro zisk (take profit 1, 2, 3)
+               - Výpočet poměru rizika k zisku (Risk:Reward ratio)
+            
+            4. Rizikové faktory, které mohou ovlivnit tento obchod
+            
+            Formátuj výstup pomocí markdown a používej vhodné nadpisy a odrážky pro přehlednost.
+            Odpověz v češtině. Buď konkrétní a přesný, zejména v číslech pro vstup, stoploss a take profit.
+            Nezapomeň, že analýza je pro 5-minutový timeframe a obchodník potřebuje přesné hodnoty, ne obecná doporučení.
             """
             
             # Získáme odpověď
