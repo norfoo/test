@@ -279,13 +279,15 @@ def get_financial_analysis(
                - PŘESNÁ vstupní cena
                - PŘESNÁ cena pro stoploss
                - PŘESNÉ cíle pro zisk (take profit 1, 2, 3)
-               - Výpočet poměru rizika k zisku (Risk:Reward ratio)
+               - Výpočet poměru rizika k zisku (Risk:Reward ratio) - VŽDY DOPORUČUJ POUZE OBCHODY S POMĚREM RIZIKA K ZISKU MINIMÁLNĚ 1:2,5
             
             4. Rizikové faktory, které mohou ovlivnit tento obchod
             
             Formátuj výstup pomocí markdown a používej vhodné nadpisy a odrážky pro přehlednost.
             Odpověz v češtině. Buď konkrétní a přesný, zejména v číslech pro vstup, stoploss a take profit.
             Nezapomeň, že analýza je pro 5-minutový timeframe a obchodník potřebuje přesné hodnoty, ne obecná doporučení.
+            
+            DŮLEŽITÉ: Doporučuj POUZE obchody, které mají MINIMÁLNÍ poměr rizika k zisku 1:2,5. Pokud aktuální situace neumožňuje takový poměr, doporuč VYČKÁNÍ na lepší příležitost a vysvětli, na jaké cenové úrovně čekat.
             """
             
             # Získáme odpověď

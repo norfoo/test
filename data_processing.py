@@ -258,3 +258,69 @@ def search_local_instruments(query: str, instruments: List[Dict[str, str]]) -> L
             results.append(instrument)
     
     return results[:10]  # Omezíme na prvních 10 výsledků
+
+
+def check_risk_reward_ratio(entry: float, stoploss: float, take_profit: float, min_ratio: float = 2.5) -> bool:
+    """
+    Kontroluje, zda obchodní signál splňuje minimální poměr rizika k zisku.
+    
+    Args:
+        entry: Vstupní cena
+        stoploss: Stop-loss cena
+        take_profit: Take-profit cena
+        min_ratio: Minimální požadovaný poměr rizika k zisku (výchozí 2.5)
+        
+    Returns:
+        True, pokud obchodní signál splňuje minimální poměr rizika k zisku, jinak False
+    """
+    # Výpočet rozdílu pro riziko a zisk
+    is_long = entry < take_profit  # True pro long, False pro short
+    
+    if is_long:
+        risk = abs(entry - stoploss)
+        reward = abs(take_profit - entry)
+    else:
+        risk = abs(stoploss - entry)
+        reward = abs(entry - take_profit)
+    
+    # Ochrana proti dělení nulou
+    if risk == 0:
+        return False
+    
+    # Výpočet poměru rizika k zisku
+    ratio = reward / risk
+    
+    # Kontrola, zda je splněn minimální požadovaný poměr
+    return ratio >= min_ratio
+
+
+def calculate_risk_reward_ratio(entry: float, stoploss: float, take_profit: float) -> float:
+    """
+    Vypočítá poměr rizika k zisku pro zadaný obchodní signál.
+    
+    Args:
+        entry: Vstupní cena
+        stoploss: Stop-loss cena
+        take_profit: Take-profit cena
+        
+    Returns:
+        Poměr rizika k zisku jako číslo (např. 2.5 znamená 1:2.5)
+    """
+    # Výpočet rozdílu pro riziko a zisk
+    is_long = entry < take_profit  # True pro long, False pro short
+    
+    if is_long:
+        risk = abs(entry - stoploss)
+        reward = abs(take_profit - entry)
+    else:
+        risk = abs(stoploss - entry)
+        reward = abs(entry - take_profit)
+    
+    # Ochrana proti dělení nulou
+    if risk == 0:
+        return 0.0
+    
+    # Výpočet poměru rizika k zisku
+    ratio = reward / risk
+    
+    return ratio
