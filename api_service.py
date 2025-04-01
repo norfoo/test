@@ -10,6 +10,11 @@ import pandas as pd
 API_KEY = os.environ.get('TWELVE_DATA_API_KEY')
 BASE_URL = 'https://api.twelvedata.com'
 
+# Nastavení pro řízení četnosti požadavků
+MAX_RETRIES = 3  # Maximální počet pokusů při selhání požadavku
+RETRY_DELAY = 2  # Čekání mezi pokusy (v sekundách)
+RATE_LIMIT = 8   # Počet kreditů za minutu (Free tier limit)
+
 def get_current_quote(symbol: str) -> Optional[Dict[str, Any]]:
     """
     Získá poslední kotaci pro daný symbol z Twelve Data API.
@@ -72,38 +77,68 @@ def get_time_series(symbol: str, interval: str = '1day', outputsize: int = 30) -
         'apikey': API_KEY,
         'outputsize': outputsize
     }
-
-    try:
-        response = requests.get(endpoint, params=params)
-        response.raise_for_status()
-        data = response.json()
-        
-        if 'values' in data:
-            # Převod na DataFrame
-            df = pd.DataFrame(data['values'])
+    
+    # Implementace opakování pokusů při selhání
+    for attempt in range(MAX_RETRIES):
+        try:
+            print(f"Získávám data pro {symbol} s intervalem {interval} (pokus {attempt+1}/{MAX_RETRIES})")
+            response = requests.get(endpoint, params=params)
+            response.raise_for_status()
+            data = response.json()
             
-            # Úprava formátu dat
-            df['datetime'] = pd.to_datetime(df['datetime'])
-            for col in ['open', 'high', 'low', 'close', 'volume']:
-                if col in df.columns:
-                    df[col] = pd.to_numeric(df[col])
+            if 'values' in data:
+                # Převod na DataFrame
+                df = pd.DataFrame(data['values'])
+                
+                # Úprava formátu dat
+                df['datetime'] = pd.to_datetime(df['datetime'])
+                for col in ['open', 'high', 'low', 'close', 'volume']:
+                    if col in df.columns:
+                        df[col] = pd.to_numeric(df[col])
+                
+                return df
+            else:
+                print(f"Chyba: V odpovědi nejsou data. Odpověď API: {data}")
+                if 'code' in data and data.get('code') == 429:
+                    print(f"Dosažen limit požadavků API. Čekám před dalším pokusem.")
+                    if attempt < MAX_RETRIES - 1:
+                        time.sleep(RETRY_DELAY * 2)  # Delší čekání při limitu
+                        continue
+                    
+                # Pokud nejde o limit požadavků nebo je to poslední pokus
+                return None
+                
+        except requests.exceptions.RequestException as e:
+            print(f"Chyba při volání API Twelve Data (pokus {attempt+1}/{MAX_RETRIES}): {e}")
+            if hasattr(e, 'response') and e.response is not None:
+                try:
+                    error_data = e.response.json()
+                    print("Odpověď serveru při chybě:", error_data)
+                    
+                    # Kontrola limitu požadavků
+                    if e.response.status_code == 429 or (isinstance(error_data, dict) and error_data.get('code') == 429):
+                        print("Dosažen limit požadavků API.")
+                        if attempt < MAX_RETRIES - 1:
+                            wait_time = RETRY_DELAY * 2
+                            print(f"Čekám {wait_time} sekund před dalším pokusem...")
+                            time.sleep(wait_time)
+                            continue
+                except json.JSONDecodeError:
+                    print("Odpověď serveru při chybě (není JSON):", e.response.text)
             
-            return df
-        else:
-            print(f"Chyba: V odpovědi nejsou data. Odpověď API: {data}")
-            return None
-            
-    except requests.exceptions.RequestException as e:
-        print(f"Chyba při volání API Twelve Data: {e}")
-        if hasattr(e, 'response') and e.response is not None:
-            try:
-                print("Odpověď serveru při chybě:", e.response.json())
-            except json.JSONDecodeError:
-                print("Odpověď serveru při chybě (není JSON):", e.response.text)
-        return None
-    except Exception as e:
-        print(f"Nastala neočekávaná chyba: {e}")
-        return None
+            if attempt < MAX_RETRIES - 1:
+                print(f"Zkouším znovu za {RETRY_DELAY} sekund...")
+                time.sleep(RETRY_DELAY)
+            else:
+                return None
+                
+        except Exception as e:
+            print(f"Nastala neočekávaná chyba (pokus {attempt+1}/{MAX_RETRIES}): {e}")
+            if attempt < MAX_RETRIES - 1:
+                print(f"Zkouším znovu za {RETRY_DELAY} sekund...")
+                time.sleep(RETRY_DELAY)
+            else:
+                return None
 
 def search_symbols(query: str) -> List[Dict[str, str]]:
     """
@@ -227,16 +262,16 @@ def get_commodities() -> List[Dict[str, str]]:
     Returns:
         Seznam dostupných komodit nebo prázdný seznam v případě chyby
     """
-    # Použijeme nejběžnější komodity kvůli omezení API
+    # Použijeme nejběžnější komodity dostupné na free plánu Twelve Data API
     common_commodities = [
-        {"symbol": "GOLD", "name": "Gold", "currency": "USD", "exchange": "COMEX", "mic_code": "XCEC", "country": "United States"},
-        {"symbol": "SILVER", "name": "Silver", "currency": "USD", "exchange": "COMEX", "mic_code": "XCEC", "country": "United States"},
-        {"symbol": "COPPER", "name": "Copper", "currency": "USD", "exchange": "COMEX", "mic_code": "XCEC", "country": "United States"},
-        {"symbol": "BRENT", "name": "Brent Crude Oil", "currency": "USD", "exchange": "ICE", "mic_code": "IFEU", "country": "United Kingdom"},
-        {"symbol": "WTI", "name": "WTI Crude Oil", "currency": "USD", "exchange": "NYMEX", "mic_code": "XNYM", "country": "United States"},
-        {"symbol": "NATURAL_GAS", "name": "Natural Gas", "currency": "USD", "exchange": "NYMEX", "mic_code": "XNYM", "country": "United States"},
-        {"symbol": "WHEAT", "name": "Wheat", "currency": "USD", "exchange": "CBOT", "mic_code": "XCBT", "country": "United States"},
-        {"symbol": "CORN", "name": "Corn", "currency": "USD", "exchange": "CBOT", "mic_code": "XCBT", "country": "United States"}
+        {"symbol": "GOLD", "name": "Zlato (GOLD)", "currency": "USD", "exchange": "FOREX", "mic_code": "FOREX", "country": "United States"},
+        {"symbol": "SILVER", "name": "Stříbro (SILVER)", "currency": "USD", "exchange": "FOREX", "mic_code": "FOREX", "country": "United States"},
+        {"symbol": "COPPER", "name": "Měď (COPPER)", "currency": "USD", "exchange": "COMEX", "mic_code": "XCEC", "country": "United States"},
+        {"symbol": "BRENT", "name": "Ropa Brent", "currency": "USD", "exchange": "ICE", "mic_code": "IFEU", "country": "United Kingdom"},
+        {"symbol": "WTI", "name": "Ropa WTI", "currency": "USD", "exchange": "NYMEX", "mic_code": "XNYM", "country": "United States"},
+        {"symbol": "NATURAL_GAS", "name": "Zemní plyn", "currency": "USD", "exchange": "NYMEX", "mic_code": "XNYM", "country": "United States"},
+        {"symbol": "WHEAT", "name": "Pšenice", "currency": "USD", "exchange": "CBOT", "mic_code": "XCBT", "country": "United States"},
+        {"symbol": "CORN", "name": "Kukuřice", "currency": "USD", "exchange": "CBOT", "mic_code": "XCBT", "country": "United States"}
     ]
     
     return common_commodities

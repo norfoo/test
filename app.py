@@ -40,11 +40,11 @@ display_api_status(api_status)
 
 # Inicializace session state pro uchování stavu aplikace
 if 'selected_category' not in st.session_state:
-    st.session_state.selected_category = "forex"
+    st.session_state.selected_category = "commodities"
 if 'selected_symbol' not in st.session_state:
-    st.session_state.selected_symbol = "EUR/USD"
+    st.session_state.selected_symbol = "GOLD"
 if 'selected_timeframe' not in st.session_state:
-    st.session_state.selected_timeframe = "1day"
+    st.session_state.selected_timeframe = "5min"
 if 'search_query' not in st.session_state:
     st.session_state.search_query = ""
 if 'quote_data' not in st.session_state:
