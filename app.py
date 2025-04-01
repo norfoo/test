@@ -455,28 +455,32 @@ if st.session_state.auto_refresh:
         #     </script>
         #     """, unsafe_allow_html=True)
 
-# Navigační lišta pro přepínání mezi dashboardem a nástrojem pro porovnání strategií
-st.markdown("---")
-
 # Přidání menu pro přepínání mezi nástroji
 st.sidebar.markdown("---")
 st.sidebar.header("Navigace")
+if 'app_mode' not in st.session_state:
+    st.session_state.app_mode = "📈 Dashboard"
+
 app_mode = st.sidebar.radio(
     "Výběr aplikace",
-    ["📈 Dashboard", "🧪 Porovnání strategií"]
+    ["📈 Dashboard", "🧪 Porovnání strategií"],
+    index=0 if st.session_state.app_mode == "📈 Dashboard" else 1
 )
 
-# Skrytí obsahu dashboardu, pokud je vybrán nástroj pro porovnání strategií
+# Aktualizace stavu aplikace
+if app_mode != st.session_state.app_mode:
+    st.session_state.app_mode = app_mode
+    st.rerun()
+
+# Pokud je vybrán nástroj pro porovnání strategií, zobrazíme ho
 if app_mode == "🧪 Porovnání strategií":
-    # Skryjeme předchozí obsah
-    st.markdown("""
-    <style>
-    div.block-container {display: none;}
-    </style>
-    """, unsafe_allow_html=True)
-    
-    # Zobrazíme nový obsah
-    strategy_comparison_app()
+    # Skrýt standardní obsah dashboardu v případě přepnutí na nástroj porovnání strategií
+    st.markdown("<style>.main-content {display: none;}</style>", unsafe_allow_html=True)
+    # Před zobrazením nástroje pro porovnání strategií přidáme sekci pro vymazání paměti
+    placeholder = st.empty()
+    with placeholder.container():
+        strategy_comparison_app()
+    st.stop()  # Zastavíme vykonávání zbytku kódu
     
 # Patička
 st.markdown("---")

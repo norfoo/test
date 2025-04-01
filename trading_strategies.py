@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from typing import Dict, List, Any, Optional, Tuple
 from dataclasses import dataclass
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt  # Není potřeba, používáme Plotly
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from enum import Enum
