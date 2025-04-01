@@ -17,6 +17,10 @@ from visualization import (
     display_market_status, display_api_status, display_no_data_message,
     display_error_message, display_loading_message, display_instructions
 )
+from gemini_service import (
+    check_gemini_api_key, get_chat_response, get_financial_analysis,
+    get_available_models
+)
 
 # Konfigurace stránky
 st.set_page_config(
@@ -53,6 +57,16 @@ if 'instruments' not in st.session_state:
     st.session_state.instruments = {}
 if 'is_loading' not in st.session_state:
     st.session_state.is_loading = False
+
+# Inicializace session state pro Gemini AI chat
+if 'chat_messages' not in st.session_state:
+    st.session_state.chat_messages = []
+if 'chat_tab' not in st.session_state:
+    st.session_state.chat_tab = "chat"  # "chat" nebo "analysis"
+if 'analysis_result' not in st.session_state:
+    st.session_state.analysis_result = None
+if 'gemini_model' not in st.session_state:
+    st.session_state.gemini_model = "gemini-1.5-pro"
 
 # ----------------------------- Funkce -----------------------------
 
@@ -130,6 +144,49 @@ def on_search():
             # Aktualizace vybraného symbolu na první výsledek
             st.session_state.selected_symbol = results[0].get('symbol', '')
             update_data()
+
+def on_chat_submit():
+    """Zpracování odeslání zprávy v chatu."""
+    if st.session_state.chat_input and st.session_state.chat_input.strip():
+        user_message = st.session_state.chat_input
+        
+        # Přidání zprávy uživatele do historie
+        st.session_state.chat_messages.append({"role": "user", "content": user_message})
+        
+        # Získání odpovědi od AI
+        ai_response = get_chat_response(
+            st.session_state.chat_messages,
+            model_name=st.session_state.gemini_model
+        )
+        
+        if ai_response:
+            # Přidání odpovědi AI do historie
+            st.session_state.chat_messages.append({"role": "assistant", "content": ai_response})
+        else:
+            # Přidání zprávy o chybě
+            st.session_state.chat_messages.append(
+                {"role": "assistant", "content": "Omlouvám se, ale nepodařilo se získat odpověď. Zkontrolujte, prosím, zda je nastaven platný API klíč pro Gemini."}
+            )
+        
+        # Vyčištění vstupního pole
+        st.session_state.chat_input = ""
+
+def get_ai_analysis():
+    """Získání AI analýzy pro aktuální symbol."""
+    if st.session_state.quote_data:
+        analysis = get_financial_analysis(
+            st.session_state.selected_symbol,
+            st.session_state.quote_data,
+            st.session_state.historical_data,
+            model_name=st.session_state.gemini_model
+        )
+        
+        if analysis:
+            st.session_state.analysis_result = analysis
+        else:
+            st.session_state.analysis_result = "Nepodařilo se získat analýzu. Zkontrolujte, prosím, zda je nastaven platný API klíč pro Gemini."
+    else:
+        st.session_state.analysis_result = "Pro analýzu je potřeba načíst data o ceně."
 
 # ----------------------------- Postranní panel -----------------------------
 
@@ -267,7 +324,64 @@ else:
 if st.session_state.is_loading and 'loading_message' in locals():
     loading_message.empty()
 
+# ----------------------------- Gemini AI asistent -----------------------------
+
+# Kontrola Gemini API klíče
+gemini_api_status = check_gemini_api_key()
+
+st.markdown("---")
+st.header("💬 Gemini AI Asistent")
+
+if not gemini_api_status:
+    st.warning("""
+    API klíč pro Gemini nebyl nalezen nebo nefunguje. Prosím, nastavte platný API klíč jako proměnnou prostředí.
+    
+    ```
+    GEMINI_API_KEY=váš_api_klíč
+    ```
+    
+    API klíč můžete získat na [ai.google.dev](https://ai.google.dev/).
+    """)
+else:
+    # Záložky pro chat a analýzu
+    chat_tab, analysis_tab = st.tabs(["💬 Chat", "📊 Analýza"])
+    
+    # Záložka s chatem
+    with chat_tab:
+        st.markdown("### Chat s AI asistentem")
+        st.markdown("Zeptejte se na cokoliv ohledně finančních trhů, vybraných instrumentů nebo obchodování.")
+        
+        # Zobrazení historie zpráv
+        for message in st.session_state.chat_messages:
+            if message["role"] == "user":
+                st.chat_message("user", avatar="👤").write(message["content"])
+            else:
+                st.chat_message("assistant", avatar="🤖").write(message["content"])
+        
+        # Vstupní pole pro chat
+        st.chat_input(
+            "Napište zprávu...",
+            key="chat_input",
+            on_submit=on_chat_submit
+        )
+    
+    # Záložka s analýzou
+    with analysis_tab:
+        st.markdown("### AI Analýza vybraného instrumentu")
+        st.markdown(f"Analýza pro symbol **{st.session_state.selected_symbol}**")
+        
+        if st.button("Získat AI analýzu"):
+            with st.spinner("Generuji analýzu..."):
+                get_ai_analysis()
+        
+        if st.session_state.analysis_result:
+            st.markdown(st.session_state.analysis_result)
+        else:
+            st.info("Klikněte na tlačítko 'Získat AI analýzu' pro vygenerování analýzy vybraného instrumentu.")
+        
+        st.caption("Analýza je generována pomocí umělé inteligence a má pouze informativní charakter. Nejedná se o investiční doporučení.")
+
 # Patička
 st.markdown("---")
-st.caption("Data poskytována službou [Twelve Data](https://twelvedata.com/)")
-st.caption("© 2023 Finanční Dashboard")
+st.caption("Data poskytována službou [Twelve Data](https://twelvedata.com/) | AI asistent powered by [Google Gemini](https://ai.google.dev/)")
+st.caption("© 2023-2025 Finanční Dashboard")

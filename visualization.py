@@ -243,8 +243,17 @@ def display_instructions():
            - Můžete změnit časový rámec v postranním panelu
            - Najeďte myší nad graf pro zobrazení detailů, přibližte oblast tažením myši
            
-        4. **Nastavení API klíče**
+        4. **Gemini AI Asistent**
+           - Ve spodní části aplikace najdete AI asistenta
+           - V záložce "Chat" můžete komunikovat s AI asistentem a ptát se na finanční témata
+           - V záložce "Analýza" si můžete nechat vygenerovat analýzu aktuálně vybraného instrumentu
+           - Pro funkčnost AI asistenta je potřeba API klíč od Google Gemini
+           - Gemini API klíč je potřeba nastavit jako proměnnou prostředí s názvem `GEMINI_API_KEY`
+           - Google Gemini API klíč můžete získat na [ai.google.dev](https://ai.google.dev/)
+           
+        5. **Nastavení API klíčů**
            - Pro funkční aplikaci je nutný API klíč od Twelve Data
            - Klíč je potřeba nastavit jako proměnnou prostředí s názvem `TWELVE_DATA_API_KEY`
            - Twelve Data API klíč můžete získat na [twelvedata.com](https://twelvedata.com/)
+           - Pro funkčnost AI asistenta je potřeba nastavit Gemini API klíč jako proměnnou prostředí s názvem `GEMINI_API_KEY`
         """)
