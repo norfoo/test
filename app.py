@@ -31,9 +31,73 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Nadpis aplikace
-st.title("📈 Finanční dashboard")
-st.markdown("Dashboard pro sledování finančních trhů s využitím Twelve Data API")
+# Nastavení vlastního CSS stylu podle vzorového obrázku
+st.markdown("""
+<style>
+    .main {
+        background-color: #0e0b2b;
+        color: white;
+    }
+    .stApp {
+        background: linear-gradient(135deg, #0e0b2b 0%, #2a1964 50%, #4e0979 100%);
+    }
+    h1, h2, h3, h4 {
+        color: #f0f0f0 !important;
+    }
+    .css-1kyxreq, .css-10trblm {
+        color: #f0f0f0 !important;
+    }
+    .sidebar .sidebar-content {
+        background-color: rgba(20, 10, 50, 0.8);
+    }
+    .stButton>button {
+        background-color: #6c22df;
+        color: white;
+        border-radius: 20px;
+        border: none;
+        padding: 5px 15px;
+    }
+    .stButton>button:hover {
+        background-color: #8540e9;
+    }
+    .css-1vq4p4l, .css-f9cq9g {
+        border: 2px solid rgba(108, 34, 223, 0.2);
+        border-radius: 10px;
+        background-color: rgba(10, 5, 25, 0.6);
+        margin-bottom: 15px;
+        padding: 10px;
+    }
+    .stPlotlyChart {
+        border: 2px solid rgba(108, 34, 223, 0.2);
+        border-radius: 10px;
+        background-color: rgba(10, 5, 25, 0.3);
+        padding: 10px;
+    }
+    .css-1r6slb0 {
+        background-color: rgba(10, 5, 25, 0.5);
+        border-radius: 5px;
+    }
+    .st-br {
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    .css-1d0tddh {
+        color: #f0f0f0 !important;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# Nadpis aplikace s futuristickým designem
+st.markdown("""
+<div style="text-align: center; padding: 20px 0; background: linear-gradient(90deg, #300964 0%, #6c22df 50%, #300964 100%); 
+border-radius: 15px; margin-bottom: 20px; box-shadow: 0 0 20px rgba(108, 34, 223, 0.5);">
+    <h1 style="color: white; font-weight: bold; margin: 0; text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);">
+        🌟 Finanční Intelligence Dashboard 🌟
+    </h1>
+    <p style="color: #d0d0ff; font-size: 1.1em; margin: 5px 0 0 0;">
+        Pokročilá analýza trhů s využitím umělé inteligence a reálných dat
+    </p>
+</div>
+""", unsafe_allow_html=True)
 
 # Kontrola API klíče
 api_status = check_api_key()

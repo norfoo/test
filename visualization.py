@@ -318,47 +318,113 @@ def create_ohlc_chart(df: pd.DataFrame, title: str = "Vývoj ceny", show_volume:
 
 def display_price_indicators(quote_data: Dict[str, Any]):
     """
-    Zobrazí cenové indikátory ve formě metriky.
+    Zobrazí indikátory ceny (aktuální cena, denní rozsah, změna) s futuristickým designem.
     
     Args:
-        quote_data: Slovník s daty o kotaci
+        quote_data: Slovník s formátovanými daty o kotaci
     """
     if not quote_data:
         st.warning("Nejsou k dispozici data o ceně.")
         return
     
-    # Vytvoříme layout s 3 sloupci
+    # Pokročilý styl pro zobrazení indikátorů
+    st.markdown("""
+    <style>
+    .price-card {
+        background: linear-gradient(135deg, rgba(60, 8, 120, 0.7) 0%, rgba(100, 25, 180, 0.7) 100%);
+        border: 1px solid rgba(180, 155, 255, 0.3);
+        border-radius: 15px;
+        padding: 15px;
+        margin: 10px 0;
+        backdrop-filter: blur(5px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2), 0 0 20px rgba(108, 34, 223, 0.2);
+    }
+    .price-title {
+        color: rgba(220, 220, 255, 0.8);
+        font-size: 0.9em;
+        margin-bottom: 5px;
+        font-weight: 600;
+    }
+    .price-value {
+        color: white;
+        font-size: 1.6em;
+        font-weight: bold;
+        text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    }
+    .price-change-positive {
+        color: #4eff9f;
+        font-size: 1.1em;
+        font-weight: 600;
+    }
+    .price-change-negative {
+        color: #ff6b6b;
+        font-size: 1.1em;
+        font-weight: 600;
+    }
+    .price-range {
+        color: #b8abff;
+        font-size: 1.2em;
+        font-weight: 600;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    # Vytvoření 3 sloupců pro zobrazení indikátorů
     col1, col2, col3 = st.columns(3)
     
     # Aktuální cena
     with col1:
         if 'close' in quote_data and quote_data['close']:
-            st.metric(
-                label="Aktuální cena",
-                value=f"{quote_data['close']} {quote_data.get('currency', '')}"
-            )
-        
-    # Změna ceny
+            # Formátování hodnoty ceny
+            formatted_price = f"{quote_data['close']} {quote_data.get('currency', '')}"
+            
+            st.markdown(f"""
+            <div class="price-card">
+                <div class="price-title">AKTUÁLNÍ CENA</div>
+                <div class="price-value">{formatted_price}</div>
+            </div>
+            """, unsafe_allow_html=True)
+    
+    # Denní rozsah
     with col2:
+        if 'low' in quote_data and quote_data['low'] and 'high' in quote_data and quote_data['high']:
+            low_formatted = f"{quote_data['low']}"
+            high_formatted = f"{quote_data['high']}"
+            
+            st.markdown(f"""
+            <div class="price-card">
+                <div class="price-title">DENNÍ ROZSAH</div>
+                <div class="price-range">{low_formatted} - {high_formatted}</div>
+            </div>
+            """, unsafe_allow_html=True)
+    
+    # Denní změna
+    with col3:
         if 'change' in quote_data and quote_data['change'] and 'percent_change' in quote_data and quote_data['percent_change']:
             change = float(quote_data['change'])
-            st.metric(
-                label="Změna",
-                value=f"{quote_data['change']} {quote_data.get('currency', '')}",
-                delta=f"{quote_data['percent_change']}%"
-            )
-
-    # Denní rozsah
-    with col3:
-        if 'low' in quote_data and quote_data['low'] and 'high' in quote_data and quote_data['high']:
-            st.metric(
-                label="Denní rozsah",
-                value=f"{quote_data['low']} - {quote_data['high']} {quote_data.get('currency', '')}"
-            )
+            formatted_change = f"{quote_data['change']}"
+            formatted_percent = f"{quote_data['percent_change']}%"
+            
+            # Určení stylu podle směru změny
+            change_class = "price-change-positive" if change >= 0 else "price-change-negative"
+            change_icon = "↑" if change >= 0 else "↓"
+            
+            change_html = f"""
+            <div class="{change_class}">
+                {change_icon} {formatted_change} ({formatted_percent})
+            </div>
+            """
+            
+            st.markdown(f"""
+            <div class="price-card">
+                <div class="price-title">DENNÍ ZMĚNA</div>
+                {change_html}
+            </div>
+            """, unsafe_allow_html=True)
 
 def display_quote_details(quote_data: Dict[str, Any]):
     """
-    Zobrazí detailní informace o kotaci.
+    Zobrazí detailní informace o kotaci s futuristickým designem.
     
     Args:
         quote_data: Slovník s daty o kotaci
@@ -366,31 +432,89 @@ def display_quote_details(quote_data: Dict[str, Any]):
     if not quote_data:
         return
     
+    # Styl pro detail karty
+    st.markdown("""
+    <style>
+    .detail-card {
+        background: linear-gradient(135deg, rgba(35, 10, 60, 0.7) 0%, rgba(80, 20, 120, 0.7) 100%);
+        border: 1px solid rgba(160, 135, 255, 0.2);
+        border-radius: 12px;
+        padding: 15px;
+        margin: 10px 0;
+        backdrop-filter: blur(5px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    .detail-header {
+        color: #a992ff;
+        font-size: 0.95em;
+        margin-bottom: 5px;
+        font-weight: 600;
+    }
+    .detail-value {
+        color: white;
+        font-size: 1.1em;
+        font-weight: 500;
+    }
+    .detail-expander {
+        background: linear-gradient(90deg, rgba(40, 10, 80, 0.5) 0%, rgba(80, 20, 160, 0.5) 100%);
+        border-radius: 10px;
+        padding: 5px 15px;
+        margin-top: 10px;
+        border: 1px solid rgba(160, 135, 255, 0.2);
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
     # Vytvoříme expandující sekci s detaily
-    with st.expander("Detailní informace", expanded=False):
+    with st.expander("📊 Detailní informace", expanded=False):
         # Základní informace
         col1, col2, col3 = st.columns(3)
         
         with col1:
+            st.markdown('<div class="detail-card">', unsafe_allow_html=True)
+            
             if 'name' in quote_data:
-                st.markdown(f"**Název:**  \n{quote_data.get('name', '')}")
+                st.markdown(f'<div class="detail-header">NÁZEV</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="detail-value">{quote_data.get("name", "")}</div>', unsafe_allow_html=True)
+            
             if 'symbol' in quote_data:
-                st.markdown(f"**Symbol:**  \n{quote_data.get('symbol', '')}")
+                st.markdown(f'<div class="detail-header">SYMBOL</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="detail-value">{quote_data.get("symbol", "")}</div>', unsafe_allow_html=True)
+            
             if 'exchange' in quote_data:
-                st.markdown(f"**Burza:**  \n{quote_data.get('exchange', '')}")
+                st.markdown(f'<div class="detail-header">BURZA</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="detail-value">{quote_data.get("exchange", "")}</div>', unsafe_allow_html=True)
+            
+            st.markdown('</div>', unsafe_allow_html=True)
 
         with col2:
+            st.markdown('<div class="detail-card">', unsafe_allow_html=True)
+            
             if 'open' in quote_data:
-                st.markdown(f"**Otevírací cena:**  \n{quote_data.get('open', '')} {quote_data.get('currency', '')}")
+                st.markdown(f'<div class="detail-header">OTEVÍRACÍ CENA</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="detail-value">{quote_data.get("open", "")} {quote_data.get("currency", "")}</div>', unsafe_allow_html=True)
+            
             if 'previous_close' in quote_data:
-                st.markdown(f"**Předchozí závěr:**  \n{quote_data.get('previous_close', '')} {quote_data.get('currency', '')}")
+                st.markdown(f'<div class="detail-header">PŘEDCHOZÍ ZÁVĚR</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="detail-value">{quote_data.get("previous_close", "")} {quote_data.get("currency", "")}</div>', unsafe_allow_html=True)
+            
             if 'datetime' in quote_data:
-                st.markdown(f"**Datum a čas:**  \n{quote_data.get('datetime', '')}")
+                st.markdown(f'<div class="detail-header">DATUM A ČAS</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="detail-value">{quote_data.get("datetime", "")}</div>', unsafe_allow_html=True)
+            
+            st.markdown('</div>', unsafe_allow_html=True)
 
         with col3:
+            st.markdown('<div class="detail-card">', unsafe_allow_html=True)
+            
             if 'fifty_two_week' in quote_data:
-                st.markdown(f"**52 týdenní minimum:**  \n{quote_data.get('fifty_two_week', {}).get('low', '')} {quote_data.get('currency', '')}")
-                st.markdown(f"**52 týdenní maximum:**  \n{quote_data.get('fifty_two_week', {}).get('high', '')} {quote_data.get('currency', '')}")
+                st.markdown(f'<div class="detail-header">52 TÝDENNÍ MINIMUM</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="detail-value">{quote_data.get("fifty_two_week", {}).get("low", "")} {quote_data.get("currency", "")}</div>', unsafe_allow_html=True)
+                
+                st.markdown(f'<div class="detail-header">52 TÝDENNÍ MAXIMUM</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="detail-value">{quote_data.get("fifty_two_week", {}).get("high", "")} {quote_data.get("currency", "")}</div>', unsafe_allow_html=True)
+            
+            st.markdown('</div>', unsafe_allow_html=True)
 
 def display_market_status(market_status: str):
     """
