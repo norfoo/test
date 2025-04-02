@@ -721,10 +721,9 @@ else:  # app_mode == "📈 Dashboard"
                     get_ai_analysis()
 
             if st.session_state.analysis_result:
-                st.markdown(st.session_state.analysis_result, key="TWELVE_DATA_API_KEY=váš_api_klíč
-            ```
-
-            API klíč můžete získat na [twelvedata.com](https://twelvedata.com/).
+                st.markdown(st.session_state.analysis_result, key="analysis_result")
+            else:
+                st.info("Klikněte na tlačítko 'Získat AI analýzu' pro vygenerování analýzy vybraného instrumentu.")
             """)
         # else: # Odstraněno automatické načtení při startu, pokud nejsou data, uživatel klikne na Obnovit
         # update_data() # Odstraněno - může způsobit problémy při startu
