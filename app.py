@@ -562,25 +562,25 @@ st.sidebar.header("Navigace")
 if 'app_mode' not in st.session_state:
     st.session_state.app_mode = "📈 Dashboard"
 
-app_mode = st.sidebar.radio(
-    "Výběr aplikace", ["📈 Dashboard", "🧪 Porovnání strategií"],
-    index=0 if st.session_state.app_mode == "📈 Dashboard" else 1)
+# app_mode = st.sidebar.radio(
+    # "Výběr aplikace", ["📈 Dashboard", "🧪 Porovnání strategií"],
+    # index=0 if st.session_state.app_mode == "📈 Dashboard" else 1)
 
 # Aktualizace stavu aplikace
-if app_mode != st.session_state.app_mode:
-    st.session_state.app_mode = app_mode
-    st.rerun()
+# if app_mode != st.session_state.app_mode:
+    # st.session_state.app_mode = app_mode
+    # st.rerun()
 
 # Pokud je vybrán nástroj pro porovnání strategií, zobrazíme ho
-if app_mode == "🧪 Porovnání strategií":
+# if app_mode == "🧪 Porovnání strategií":
     # Efektivnější způsob skrytí/zobrazení pomocí placeholderu
-    main_content_placeholder = st.empty()  # Skryje (nevykreslí) hlavní obsah
-    strategy_placeholder = st.empty()
-    with strategy_placeholder.container():
-        strategy_comparison_app()
+    # main_content_placeholder = st.empty()  # Skryje (nevykreslí) hlavní obsah
+    # strategy_placeholder = st.empty()
+    # with strategy_placeholder.container():
+    # strategy_comparison_app()
     # st.stop() # st.stop() zde nemusí být ideální, pokud chceme zachovat sidebar
 
-else:  # app_mode == "📈 Dashboard"
+# else:  # app_mode == "📈 Dashboard"
     # Zde se vykreslí hlavní dashboard
     # Ujistíme se, že placeholder pro strategii je prázdný, pokud existuje
     # try:
