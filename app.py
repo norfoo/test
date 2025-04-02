@@ -415,91 +415,91 @@ if 'loading_message' in locals() and not st.session_state.is_loading:
 # Kontrola Gemini API klíče
 gemini_api_status = check_gemini_api_key()
 
-st.markdown("---")
-st.header("💬 Gemini AI Asistent")
+# st.markdown("---")
+# st.header("💬 Gemini AI Asistent")
 
-if not gemini_api_status:
-    st.warning("""
-    API klíč pro Gemini nebyl nalezen nebo nefunguje. Prosím, nastavte platný API klíč jako proměnnou prostředí.
+# if not gemini_api_status:
+# st.warning("""
+# API klíč pro Gemini nebyl nalezen nebo nefunguje. Prosím, nastavte platný API klíč jako proměnnou prostředí.
 
-    ```
-    GEMINI_API_KEY=váš_api_klíč
-    ```
+# ```
+# GEMINI_API_KEY=váš_api_klíč
+# ```
 
-    API klíč můžete získat na [ai.google.dev](https://ai.google.dev/).
-    """)
-else:
-    # Záložky pro chat a analýzu
-    chat_tab, analysis_tab = st.tabs(["💬 Chat", "📊 Analýza"])
+# API klíč můžete získat na [ai.google.dev](https://ai.google.dev/).
+# """)
+# else:
+# Záložky pro chat a analýzu
+# chat_tab, analysis_tab = st.tabs(["💬 Chat", "📊 Analýza"])
 
-    # Záložka s chatem
-    with chat_tab:
-        st.markdown("### Chat s AI asistentem")
-        st.markdown(
-            "Zeptejte se na cokoliv ohledně finančních trhů, vybraných instrumentů nebo obchodování."
-        )
+# Záložka s chatem
+# with chat_tab:
+# st.markdown("### Chat s AI asistentem")
+# st.markdown(
+# "Zeptejte se na cokoliv ohledně finančních trhů, vybraných instrumentů nebo obchodování."
+# )
 
-        # Zobrazení historie zpráv
-        for message in st.session_state.chat_messages:
-            if message["role"] == "user":
-                st.chat_message("user", avatar="👤").write(message["content"])
-            else:
-                st.chat_message("assistant",
-                                avatar="🤖").write(message["content"])
+# # Zobrazení historie zpráv
+# for message in st.session_state.chat_messages:
+# if message["role"] == "user":
+# st.chat_message("user", avatar="👤").write(message["content"])
+# else:
+# st.chat_message("assistant",
+# avatar="🤖").write(message["content"])
 
-        # Vstupní pole pro chat
-        user_input = st.chat_input("Napište zprávu...")
-        if user_input:
-            # Přidání zprávy uživatele do historie
-            st.session_state.chat_messages.append({
-                "role": "user",
-                "content": user_input
-            })
+# # Vstupní pole pro chat
+# user_input = st.chat_input("Napište zprávu...")
+# if user_input:
+# # Přidání zprávy uživatele do historie
+# st.session_state.chat_messages.append({
+# "role": "user",
+# "content": user_input
+# })
 
-            # Získání odpovědi od AI
-            with st.spinner("AI přemýšlí..."):
-                ai_response = get_chat_response(
-                    st.session_state.chat_messages,
-                    model_name=st.session_state.gemini_model)
+# # Získání odpovědi od AI
+# with st.spinner("AI přemýšlí..."):
+# ai_response = get_chat_response(
+# st.session_state.chat_messages,
+# model_name=st.session_state.gemini_model)
 
-            if ai_response:
-                # Přidání odpovědi AI do historie
-                st.session_state.chat_messages.append({
-                    "role": "assistant",
-                    "content": ai_response
-                })
-            else:
-                # Přidání zprávy o chybě
-                st.session_state.chat_messages.append({
-                    "role":
-                    "assistant",
-                    "content":
-                    "Omlouvám se, ale nepodařilo se získat odpověď. Zkontrolujte, prosím, zda je nastaven platný API klíč pro Gemini."
-                })
+# if ai_response:
+# # Přidání odpovědi AI do historie
+# st.session_state.chat_messages.append({
+# "role": "assistant",
+# "content": ai_response
+# })
+# else:
+# # Přidání zprávy o chybě
+# st.session_state.chat_messages.append({
+# "role":
+# "assistant",
+# "content":
+# "Omlouvám se, ale nepodařilo se získat odpověď. Zkontrolujte, prosím, zda je nastaven platný API klíč pro Gemini."
+# })
 
-            # Vyvolání překreslení stránky
-            st.rerun()
+# # Vyvolání překreslení stránky
+# st.rerun()
 
-    # Záložka s analýzou
-    with analysis_tab:
-        st.markdown("### AI Analýza vybraného instrumentu")
-        st.markdown(
-            f"Analýza pro symbol **{st.session_state.selected_symbol}**")
+# # Záložka s analýzou
+# with analysis_tab:
+# st.markdown("### AI Analýza vybraného instrumentu")
+# st.markdown(
+# f"Analýza pro symbol **{st.session_state.selected_symbol}**")
 
-        if st.button("Získat AI analýzu"):
-            with st.spinner("Generuji analýzu..."):
-                get_ai_analysis()
+# if st.button("Získat AI analýzu"):
+# with st.spinner("Generuji analýzu..."):
+# get_ai_analysis()
 
-        if st.session_state.analysis_result:
-            st.markdown(st.session_state.analysis_result)
-        else:
-            st.info(
-                "Klikněte na tlačítko 'Získat AI analýzu' pro vygenerování analýzy vybraného instrumentu."
-            )
+# if st.session_state.analysis_result:
+# st.markdown(st.session_state.analysis_result)
+# else:
+# st.info(
+# "Klikněte na tlačítko 'Získat AI analýzu' pro vygenerování analýzy vybraného instrumentu."
+# )
 
-        st.caption(
-            "Analýza je generována pomocí umělé inteligence a má pouze informativní charakter. Nejedná se o investiční doporučení."
-        )
+# st.caption(
+# "Analýza je generována pomocí umělé inteligence a má pouze informativní charakter. Nejedná se o investiční doporučení."
+# )
 
 # Automatické obnovování dat v reálném čase
 if "auto_refresh" not in st.session_state:
