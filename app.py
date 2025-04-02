@@ -402,8 +402,13 @@ else:
         display_no_data_message()
 
 # Odstraníme indikátor načítání po dokončení
-if st.session_state.is_loading and 'loading_message' in locals():
-    loading_message.empty()
+if 'loading_message' in locals() and not st.session_state.is_loading:
+    try:
+        loading_message.empty()
+    except Exception as e:
+        # Logování chyby by bylo vhodné, pokud by .empty() selhalo
+        # print(f"Error emptying loading message: {e}")
+        pass
 
 # ----------------------------- Gemini AI asistent -----------------------------
 
@@ -435,149 +440,153 @@ else:
         )
 
         # Zobrazení historie zpráv
-        for idx, message in enumerate(st.session_state.chat_messages):
+        for message in st.session_state.chat_messages:
             if message["role"] == "user":
-                st.chat_message("user", avatar="👤", key=f"user_msg_{idx}").write(message["content"])
+                st.chat_message("user", avatar="👤").write(message["content"])
             else:
-                st.chat_message("assistant", avatar="🤖", key=f"ai_msg_{idx}").write(message["content"])
+                st.chat_message("assistant",
+                                avatar="🤖").write(message["content"])
 
         # Vstupní pole pro chat
-        user_input = st.chat_input("Napište zprávu...", key="chat_input_field")
+        user_input = st.chat_input("Napište zprávu...")
         if user_input:
+            # Přidání zprávy uživatele do historie
             st.session_state.chat_messages.append({
                 "role": "user",
                 "content": user_input
             })
 
+            # Získání odpovědi od AI
             with st.spinner("AI přemýšlí..."):
                 ai_response = get_chat_response(
                     st.session_state.chat_messages,
                     model_name=st.session_state.gemini_model)
 
             if ai_response:
+                # Přidání odpovědi AI do historie
                 st.session_state.chat_messages.append({
                     "role": "assistant",
                     "content": ai_response
                 })
             else:
+                # Přidání zprávy o chybě
                 st.session_state.chat_messages.append({
-                    "role": "assistant",
-                    "content": "Omlouvám se, ale nepodařilo se získat odpověď. Zkontrolujte, prosím, zda je nastaven platný API klíč pro Gemini."
+                    "role":
+                    "assistant",
+                    "content":
+                    "Omlouvám se, ale nepodařilo se získat odpověď. Zkontrolujte, prosím, zda je nastaven platný API klíč pro Gemini."
                 })
+
+            # Vyvolání překreslení stránky
             st.rerun()
 
-        # Záložka s analýzou
-        with analysis_tab:
-            st.markdown("### AI Analýza vybraného instrumentu")
-            st.markdown(
-                f"Analýza pro symbol **{st.session_state.selected_symbol}**")
+    # Záložka s analýzou
+    with analysis_tab:
+        st.markdown("### AI Analýza vybraného instrumentu")
+        st.markdown(
+            f"Analýza pro symbol **{st.session_state.selected_symbol}**")
 
-            if st.button("Získat AI analýzu", key="analysis_button"):
-                with st.spinner("Generuji analýzu..."):
-                    get_ai_analysis()
+        if st.button("Získat AI analýzu"):
+            with st.spinner("Generuji analýzu..."):
+                get_ai_analysis()
 
-            if st.session_state.analysis_result:
-                st.markdown(st.session_state.analysis_result, key="analysis_result")
-            else:
-                st.info(
-                    "Klikněte na tlačítko 'Získat AI analýzu' pro vygenerování analýzy vybraného instrumentu.",
-                    key="analysis_info"
-                )
+        if st.session_state.analysis_result:
+            st.markdown(st.session_state.analysis_result)
+        else:
+            st.info(
+                "Klikněte na tlačítko 'Získat AI analýzu' pro vygenerování analýzy vybraného instrumentu."
+            )
 
-# --- DOČASNĚ ZAKOMENTOVÁNO PRO TEST CHYBY removeChild ---
-# # Automatické obnovování dat v reálném čase
-# if "auto_refresh" not in st.session_state:
-#     st.session_state.auto_refresh = False
-# if "refresh_interval" not in st.session_state:
-#     st.session_state.refresh_interval = 60  # výchozí interval obnovení v sekundách
+        st.caption(
+            "Analýza je generována pomocí umělé inteligence a má pouze informativní charakter. Nejedná se o investiční doporučení."
+        )
+
+# Automatické obnovování dat v reálném čase
+if "auto_refresh" not in st.session_state:
+    st.session_state.auto_refresh = False
+if "refresh_interval" not in st.session_state:
+    st.session_state.refresh_interval = 60  # výchozí interval obnovení v sekundách
 
 with st.sidebar:
     st.markdown("---")
-    # --- DOČASNĚ ZAKOMENTOVÁNO PRO TEST CHYBY removeChild ---
-    # st.subheader("Automatické obnovování")
-    #
-    # auto_refresh = st.checkbox("Povolit automatické obnovování dat", value=st.session_state.auto_refresh)
-    #
-    # if auto_refresh != st.session_state.auto_refresh:
-    #     st.session_state.auto_refresh = auto_refresh
-    #     # Při změně stavu obnovíme stránku
-    #     st.rerun()
-    #
-    # refresh_interval = st.slider(
-    #     "Interval obnovení (sekundy)",
-    #     min_value=5,
-    #     max_value=300,
-    #     value=st.session_state.refresh_interval,
-    #     step=5
-    # )
-    #
-    # if refresh_interval != st.session_state.refresh_interval:
-    #     st.session_state.refresh_interval = refresh_interval
-    #     # Při změně intervalu obnovíme stránku
-    #     st.rerun()
-    #
-    # # Informace o příštím obnovení
-    # if st.session_state.auto_refresh and st.session_state.last_refresh:
-    #     next_refresh = st.session_state.last_refresh + st.session_state.refresh_interval
-    #     time_to_refresh = max(0, next_refresh - time.time())
-    #     st.text(f"Příští obnovení za: {int(time_to_refresh)} s")
-    # --- KONEC DOČASNĚ ZAKOMENTOVANÉ ČÁSTI ---
+    st.subheader("Automatické obnovování")
 
-    st.sidebar.markdown("---")  # Tento oddělovač ponecháme
-    st.sidebar.header("Navigace")
-    if 'app_mode' not in st.session_state:
-        st.session_state.app_mode = "📈 Dashboard"
+    auto_refresh = st.checkbox("Povolit automatické obnovování dat",
+                               value=st.session_state.auto_refresh)
 
-    app_mode = st.sidebar.radio(
-        "Výběr aplikace", ["📈 Dashboard", "🧪 Porovnání strategií"],
-        index=0 if st.session_state.app_mode == "📈 Dashboard" else 1)
-
-    # Aktualizace stavu aplikace
-    if app_mode != st.session_state.app_mode:
-        st.session_state.app_mode = app_mode
+    if auto_refresh != st.session_state.auto_refresh:
+        st.session_state.auto_refresh = auto_refresh
+        # Při změně stavu obnovíme stránku
         st.rerun()
 
-# --- DOČASNĚ ZAKOMENTOVÁNO PRO TEST CHYBY removeChild ---
-# # Automatické obnovení pomocí JavaScript
-# if st.session_state.auto_refresh:
-#     # Přepočítáme zbývající čas do příštího obnovení
-#     if st.session_state.last_refresh:
-#         next_refresh = st.session_state.last_refresh + st.session_state.refresh_interval
-#         time_to_refresh = max(0, next_refresh - time.time())
-#         # Pouze pokud je čas k dalšímu obnovení menší než interval, obnovíme
-#         if time_to_refresh <= 0:
-#             update_data()  # Obnovíme data
-#             # Pokud nejsme na stránce, nastane obnovení při příštím načtení
-#
-#     # JavaScript pro automatické obnovení stránky po uplynutí času
-#     # ms_to_refresh = int(time_to_refresh * 1000)
-#     # if ms_to_refresh > 0:
-#     #     st.markdown(f"""
-#     #     <script>
-#     #         setTimeout(function(){{ window.location.reload(); }}, {ms_to_refresh});
-#     #     </script>
-#     #     """, unsafe_allow_html=True)
-# --- KONEC DOČASNĚ ZAKOMENTOVANÉ ČÁSTI ---
+    refresh_interval = st.slider("Interval obnovení (sekundy)",
+                                 min_value=5,
+                                 max_value=300,
+                                 value=st.session_state.refresh_interval,
+                                 step=5)
+
+    if refresh_interval != st.session_state.refresh_interval:
+        st.session_state.refresh_interval = refresh_interval
+        # Při změně intervalu obnovíme stránku
+        st.rerun()
+
+    # Informace o příštím obnovení
+    if st.session_state.auto_refresh and st.session_state.last_refresh:
+        next_refresh = st.session_state.last_refresh + st.session_state.refresh_interval
+        time_to_refresh = max(0, next_refresh - time.time())
+        st.text(f"Příští obnovení za: {int(time_to_refresh)} s")
+
+# Automatické obnovení pomocí Python logiky
+if st.session_state.auto_refresh:
+    # Přepočítáme zbývající čas do příštího obnovení
+    if st.session_state.last_refresh:
+        next_refresh = st.session_state.last_refresh + st.session_state.refresh_interval
+        time_to_refresh = max(0, next_refresh - time.time())
+        # Pouze pokud je čas k dalšímu obnovení menší než interval, obnovíme
+        if time_to_refresh <= 0:
+            update_data()  # Obnovíme data
+            # Po obnovení dat můžeme chtít vynutit rerun, aby se zobrazil nový čas
+            st.rerun()  # Pozor: častý rerun může způsobovat problémy
+
+    # JavaScript pro vynucené obnovení stránky (méně ideální)
+    # ms_to_refresh = int(st.session_state.refresh_interval * 1000)
+    # st.markdown(f"""
+    # <script>
+    #     setTimeout(function(){{ window.location.reload(); }}, {ms_to_refresh});
+    # </script>
+    # """, unsafe_allow_html=True)
+
+# Přidání menu pro přepínání mezi nástroji
+st.sidebar.markdown("---")
+st.sidebar.header("Navigace")
+if 'app_mode' not in st.session_state:
+    st.session_state.app_mode = "📈 Dashboard"
+
+app_mode = st.sidebar.radio(
+    "Výběr aplikace", ["📈 Dashboard", "🧪 Porovnání strategií"],
+    index=0 if st.session_state.app_mode == "📈 Dashboard" else 1)
+
+# Aktualizace stavu aplikace
+if app_mode != st.session_state.app_mode:
+    st.session_state.app_mode = app_mode
+    st.rerun()
 
 # Pokud je vybrán nástroj pro porovnání strategií, zobrazíme ho
 if app_mode == "🧪 Porovnání strategií":
-    # Skrýt standardní obsah dashboardu v případě přepnutí na nástroj porovnání strategií
-    # Použijeme st.empty() k efektivnějšímu skrytí / zobrazení
-    main_content_placeholder = st.empty()
-    with main_content_placeholder.container():
-        # Zde by měl být zobrazen standardní dashboard, pokud app_mode == "📈 Dashboard"
-        # Jelikož jsme v `if app_mode == "🧪 Porovnání strategií":`, tento blok se nevykreslí
-        pass
-
+    # Efektivnější způsob skrytí/zobrazení pomocí placeholderu
+    main_content_placeholder = st.empty()  # Skryje (nevykreslí) hlavní obsah
     strategy_placeholder = st.empty()
     with strategy_placeholder.container():
         strategy_comparison_app()
-    st.stop()  # Zastavíme vykonávání zbytku kódu pro hlavní dashboard
+    # st.stop() # st.stop() zde nemusí být ideální, pokud chceme zachovat sidebar
+
 else:  # app_mode == "📈 Dashboard"
-    # Zde se vykreslí hlavní dashboard (kód, který byl původně přímo v hlavním bloku)
-    # Ujistíme se, že placeholder pro strategii je prázdný
-    # (Toto nemusí být nutné, pokud se stránka vždy znovu načte přes rerun)
-    # strategy_placeholder = st.empty()
+    # Zde se vykreslí hlavní dashboard
+    # Ujistíme se, že placeholder pro strategii je prázdný, pokud existuje
+    # try:
+    #      strategy_placeholder.empty()
+    # except NameError:
+    #      pass # Placeholder nebyl vytvořen v tomto běhu
 
     # Při prvním načtení stránky nebo když nejsou data
     if st.session_state.quote_data is None or st.session_state.historical_data is None:
@@ -591,13 +600,14 @@ else:  # app_mode == "📈 Dashboard"
 
             API klíč můžete získat na [twelvedata.com](https://twelvedata.com/).
             """)
-        # else: # Odstraněno automatické načtení při startu, pokud nejsou data, uživatel klikne na Obnovit
-        # update_data() # Odstraněno - může způsobit problémy při startu
+        # else: # Necháme načtení dat na uživateli (kliknutí na Obnovit) nebo první interakci
+        #     pass # update_data()
 
     # Zobrazení stavu načítání
+    loading_placeholder = st.empty()  # Placeholder pro zprávu o načítání
     if st.session_state.is_loading:
-        loading_message = display_loading_message(
-        )  # Zde by měl být kód pro zobrazení spinneru
+        with loading_placeholder.container():
+            display_loading_message()
 
     # Zobrazení dat o ceně
     if st.session_state.quote_data:
@@ -627,30 +637,22 @@ else:  # app_mode == "📈 Dashboard"
             if fig:
                 st.plotly_chart(fig, use_container_width=True)
             else:
-                display_no_data_message(
-                )  # Zde by měl být kód pro zobrazení zprávy
+                display_no_data_message()
         else:
-            display_no_data_message(
-            )  # Zde by měl být kód pro zobrazení zprávy
+            # Pokud nejsou historická data, ale jsou quote data
+            if not st.session_state.is_loading:
+                display_no_data_message(
+                )  # Zobrazit zprávu jen pokud se nenačítá
     else:
-        # Pokud nejsou data o ceně, ale není aktivní načítání a API je OK, zobraz zprávu
+        # Pokud nejsou ani quote data
         if not st.session_state.is_loading and api_status:
-            display_no_data_message(
-            )  # Zde by měl být kód pro zobrazení zprávy
+            display_no_data_message()
 
-    # Odstraníme indikátor načítání po dokončení
-    # Potenciálně problematické místo - musí být voláno jen jednou a ve správný čas
-    if 'loading_message' in locals() and not st.session_state.is_loading:
-        try:
-            loading_message.empty()
-        except Exception as e:
-            # Logování chyby by bylo vhodné, pokud by .empty() selhalo
-            # print(f"Error emptying loading message: {e}")
-            pass
+    # Odstraníme indikátor načítání po dokončení (pokud nebyl odstraněn jinak)
+    if not st.session_state.is_loading:
+        loading_placeholder.empty()
 
-    # --- Přesunuto sem, aby se zobrazilo i když se nenačtou data ---
-    # ----------------------------- Gemini AI asistent -----------------------------
-
+    # ----------------------------- Gemini AI asistent (přesunuto sem) -----------------------------
     # Kontrola Gemini API klíče
     gemini_api_status = check_gemini_api_key()
 
@@ -679,35 +681,47 @@ else:  # app_mode == "📈 Dashboard"
             )
 
             # Zobrazení historie zpráv
-            for idx, message in enumerate(st.session_state.chat_messages):
+            for message in st.session_state.chat_messages:
                 if message["role"] == "user":
-                    st.chat_message("user", avatar="👤", key=f"user_msg_{idx}").write(message["content"])
+                    st.chat_message("user",
+                                    avatar="👤").write(message["content"])
                 else:
-                    st.chat_message("assistant", avatar="🤖", key=f"ai_msg_{idx}").write(message["content"])
+                    st.chat_message("assistant",
+                                    avatar="🤖").write(message["content"])
 
             # Vstupní pole pro chat
-            user_input = st.chat_input("Napište zprávu...", key="chat_input_field")
+            user_input = st.chat_input("Napište zprávu...")
             if user_input:
+                # Přidání zprávy uživatele do historie
                 st.session_state.chat_messages.append({
                     "role": "user",
                     "content": user_input
                 })
 
+                # Získání odpovědi od AI
                 with st.spinner("AI přemýšlí..."):
                     ai_response = get_chat_response(
                         st.session_state.chat_messages,
                         model_name=st.session_state.gemini_model)
 
                 if ai_response:
+                    # Přidání odpovědi AI do historie
                     st.session_state.chat_messages.append({
-                        "role": "assistant",
-                        "content": ai_response
+                        "role":
+                        "assistant",
+                        "content":
+                        ai_response
                     })
                 else:
+                    # Přidání zprávy o chybě
                     st.session_state.chat_messages.append({
-                        "role": "assistant",
-                        "content": "Omlouvám se, ale nepodařilo se získat odpověď. Zkontrolujte, prosím, zda je nastaven platný API klíč pro Gemini."
+                        "role":
+                        "assistant",
+                        "content":
+                        "Omlouvám se, ale nepodařilo se získat odpověď. Zkontrolujte, prosím, zda je nastaven platný API klíč pro Gemini."
                     })
+
+                # Vyvolání překreslení stránky - Zvážit, zda je nutné po každé zprávě
                 st.rerun()
 
         # Záložka s analýzou
@@ -716,84 +730,24 @@ else:  # app_mode == "📈 Dashboard"
             st.markdown(
                 f"Analýza pro symbol **{st.session_state.selected_symbol}**")
 
-            if st.button("Získat AI analýzu", key="analysis_button"):
+            if st.button("Získat AI analýzu"):
                 with st.spinner("Generuji analýzu..."):
                     get_ai_analysis()
 
             if st.session_state.analysis_result:
-                st.markdown(st.session_state.analysis_result, key="analysis_result")
+                st.markdown(st.session_state.analysis_result)
             else:
-                st.info("Klikněte na tlačítko 'Získat AI analýzu' pro vygenerování analýzy vybraného instrumentu.")
-            """)
-        # else: # Odstraněno automatické načtení při startu, pokud nejsou data, uživatel klikne na Obnovit
-        # update_data() # Odstraněno - může způsobit problémy při startu
+                st.info(
+                    "Klikněte na tlačítko 'Získat AI analýzu' pro vygenerování analýzy vybraného instrumentu."
+                )
 
-    # Zobrazení stavu načítání
-    if st.session_state.is_loading:
-        loading_message = display_loading_message(
-        )  # Zde by měl být kód pro zobrazení spinneru
-
-    # Zobrazení dat o ceně
-    if st.session_state.quote_data:
-        # Záhlaví s informacemi o vybraném nástroji
-        col1, col2 = st.columns([3, 1])
-        with col1:
-            st.subheader(
-                f"{st.session_state.quote_data.get('name', st.session_state.selected_symbol)}"
+            st.caption(
+                "Analýza je generována pomocí umělé inteligence a má pouze informativní charakter. Nejedná se o investiční doporučení."
             )
-            st.caption(f"Symbol: {st.session_state.selected_symbol}")
-        with col2:
-            market_status = get_market_status(st.session_state.quote_data)
-            display_market_status(market_status)
 
-        # Zobrazení indikátorů ceny
-        display_price_indicators(st.session_state.quote_data)
-
-        # Zobrazení detailních informací
-        display_quote_details(st.session_state.quote_data)
-
-        # Zobrazení grafu
-        if st.session_state.historical_data is not None and not st.session_state.historical_data.empty:
-            # Vytvoření grafu
-            chart_title = f"Vývoj ceny {st.session_state.selected_symbol} ({st.session_state.selected_timeframe})"
-            fig = create_ohlc_chart(st.session_state.historical_data,
-                                    title=chart_title)
-            if fig:
-                st.plotly_chart(fig, use_container_width=True)
-            else:
-                display_no_data_message(
-                )  # Zde by měl být kód pro zobrazení zprávy
-        else:
-            display_no_data_message(
-            )  # Zde by měl být kód pro zobrazení zprávy
-    else:
-        # Pokud nejsou data o ceně, ale není aktivní načítání a API je OK, zobraz zprávu
-        if not st.session_state.is_loading and api_status:
-            display_no_data_message(
-            )  # Zde by měl být kód pro zobrazení zprávy
-
-    # Odstraníme indikátor načítání po dokončení
-    # Potenciálně problematické místo - musí být voláno jen jednou a ve správný čas
-    if 'loading_message' in locals() and not st.session_state.is_loading:
-        try:
-            loading_message.empty()
-        except Exception as e:
-            # Logování chyby by bylo vhodné, pokud by .empty() selhalo
-            # print(f"Error emptying loading message: {e}")
-            pass
-
-    # --- Přesunuto sem, aby se zobrazilo i když se nenačtou data ---
-    # ----------------------------- Gemini AI asistent -----------------------------
-
-    # Kontrola Gemini API klíče
-    gemini_api_status = check_gemini_api_key()
-
-    st.markdown("---")
-    st.header("💬 Gemini AI Asistent")
-
-    if not gemini_api_status:
-        st.warning("""
-        API klíč pro Gemini nebyl nalezen nebo nefunguje. Prosím, nastavte platný API klíč jako proměnnou prostředí.
-
-        ```
-        GEMINI_API_KEY=váš_api_klíč
+# Patička
+st.markdown("---")
+st.caption(
+    "Data poskytována službou [Twelve Data](https://twelvedata.com/) | AI asistent powered by [Google Gemini](https://ai.google.dev/)"
+)
+st.caption("© 2023-2025 Finanční Dashboard")
