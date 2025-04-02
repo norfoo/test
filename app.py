@@ -435,65 +435,54 @@ else:
         )
 
         # Zobrazení historie zpráv
-        for message in st.session_state.chat_messages:
+        for idx, message in enumerate(st.session_state.chat_messages):
             if message["role"] == "user":
-                st.chat_message("user", avatar="👤").write(message["content"])
+                st.chat_message("user", avatar="👤", key=f"user_msg_{idx}").write(message["content"])
             else:
-                st.chat_message("assistant",
-                                avatar="🤖").write(message["content"])
+                st.chat_message("assistant", avatar="🤖", key=f"ai_msg_{idx}").write(message["content"])
 
         # Vstupní pole pro chat
-        user_input = st.chat_input("Napište zprávu...")
+        user_input = st.chat_input("Napište zprávu...", key="chat_input_field")
         if user_input:
-            # Přidání zprávy uživatele do historie
             st.session_state.chat_messages.append({
                 "role": "user",
                 "content": user_input
             })
 
-            # Získání odpovědi od AI
-            ai_response = get_chat_response(
-                st.session_state.chat_messages,
-                model_name=st.session_state.gemini_model)
+            with st.spinner("AI přemýšlí..."):
+                ai_response = get_chat_response(
+                    st.session_state.chat_messages,
+                    model_name=st.session_state.gemini_model)
 
             if ai_response:
-                # Přidání odpovědi AI do historie
                 st.session_state.chat_messages.append({
                     "role": "assistant",
                     "content": ai_response
                 })
             else:
-                # Přidání zprávy o chybě
                 st.session_state.chat_messages.append({
-                    "role":
-                    "assistant",
-                    "content":
-                    "Omlouvám se, ale nepodařilo se získat odpověď. Zkontrolujte, prosím, zda je nastaven platný API klíč pro Gemini."
+                    "role": "assistant",
+                    "content": "Omlouvám se, ale nepodařilo se získat odpověď. Zkontrolujte, prosím, zda je nastaven platný API klíč pro Gemini."
                 })
-
-            # Vyvolání překreslení stránky
             st.rerun()
 
-    # Záložka s analýzou
-    with analysis_tab:
-        st.markdown("### AI Analýza vybraného instrumentu")
-        st.markdown(
-            f"Analýza pro symbol **{st.session_state.selected_symbol}**")
+        # Záložka s analýzou
+        with analysis_tab:
+            st.markdown("### AI Analýza vybraného instrumentu")
+            st.markdown(
+                f"Analýza pro symbol **{st.session_state.selected_symbol}**")
 
-        if st.button("Získat AI analýzu"):
-            with st.spinner("Generuji analýzu..."):
-                get_ai_analysis()
+            if st.button("Získat AI analýzu", key="analysis_button"):
+                with st.spinner("Generuji analýzu..."):
+                    get_ai_analysis()
 
-        if st.session_state.analysis_result:
-            st.markdown(st.session_state.analysis_result)
-        else:
-            st.info(
-                "Klikněte na tlačítko 'Získat AI analýzu' pro vygenerování analýzy vybraného instrumentu."
-            )
-
-        st.caption(
-            "Analýza je generována pomocí umělé inteligence a má pouze informativní charakter. Nejedná se o investiční doporučení."
-        )
+            if st.session_state.analysis_result:
+                st.markdown(st.session_state.analysis_result, key="analysis_result")
+            else:
+                st.info(
+                    "Klikněte na tlačítko 'Získat AI analýzu' pro vygenerování analýzy vybraného instrumentu.",
+                    key="analysis_info"
+                )
 
 # --- DOČASNĚ ZAKOMENTOVÁNO PRO TEST CHYBY removeChild ---
 # # Automatické obnovování dat v reálném čase
@@ -690,49 +679,36 @@ else:  # app_mode == "📈 Dashboard"
             )
 
             # Zobrazení historie zpráv
-            # Potenciální problém: Pokud je historie velmi dlouhá, může to ovlivnit výkon
-            for message in st.session_state.chat_messages:
+            for idx, message in enumerate(st.session_state.chat_messages):
                 if message["role"] == "user":
-                    st.chat_message("user",
-                                    avatar="👤").write(message["content"])
+                    st.chat_message("user", avatar="👤", key=f"user_msg_{idx}").write(message["content"])
                 else:
-                    st.chat_message("assistant",
-                                    avatar="🤖").write(message["content"])
+                    st.chat_message("assistant", avatar="🤖", key=f"ai_msg_{idx}").write(message["content"])
 
             # Vstupní pole pro chat
-            user_input = st.chat_input("Napište zprávu...", key="main_chat_input")
+            user_input = st.chat_input("Napište zprávu...", key="chat_input_field")
             if user_input:
-                # Přidání zprávy uživatele do historie
                 st.session_state.chat_messages.append({
                     "role": "user",
                     "content": user_input
                 })
 
-                # Získání odpovědi od AI (asynchronní volání by bylo lepší)
                 with st.spinner("AI přemýšlí..."):
                     ai_response = get_chat_response(
                         st.session_state.chat_messages,
                         model_name=st.session_state.gemini_model)
 
                 if ai_response:
-                    # Přidání odpovědi AI do historie
                     st.session_state.chat_messages.append({
-                        "role":
-                        "assistant",
-                        "content":
-                        ai_response
+                        "role": "assistant",
+                        "content": ai_response
                     })
                 else:
-                    # Přidání zprávy o chybě
                     st.session_state.chat_messages.append({
-                        "role":
-                        "assistant",
-                        "content":
-                        "Omlouvám se, ale nepodařilo se získat odpověď. Zkontrolujte, prosím, zda je nastaven platný API klíč pro Gemini."
+                        "role": "assistant",
+                        "content": "Omlouvám se, ale nepodařilo se získat odpověď. Zkontrolujte, prosím, zda je nastaven platný API klíč pro Gemini."
                     })
-
-                # Vyvolání překreslení stránky
-                st.rerun()  # st.rerun() může být problematický
+                st.rerun()
 
         # Záložka s analýzou
         with analysis_tab:
@@ -740,24 +716,87 @@ else:  # app_mode == "📈 Dashboard"
             st.markdown(
                 f"Analýza pro symbol **{st.session_state.selected_symbol}**")
 
-            if st.button("Získat AI analýzu"):
+            if st.button("Získat AI analýzu", key="analysis_button"):
                 with st.spinner("Generuji analýzu..."):
                     get_ai_analysis()
 
             if st.session_state.analysis_result:
-                st.markdown(st.session_state.analysis_result)
+                st.markdown(st.session_state.analysis_result, key="analysis_result")
             else:
-                st.info(
-                    "Klikněte na tlačítko 'Získat AI analýzu' pro vygenerování analýzy vybraného instrumentu."
-                )
+                st.TWELVE_DATA_API_KEY=váš_api_klíč
+            ```
 
-            st.caption(
-                "Analýza je generována pomocí umělé inteligence a má pouze informativní charakter. Nejedná se o investiční doporučení."
+            API klíč můžete získat na [twelvedata.com](https://twelvedata.com/).
+            """)
+        # else: # Odstraněno automatické načtení při startu, pokud nejsou data, uživatel klikne na Obnovit
+        # update_data() # Odstraněno - může způsobit problémy při startu
+
+    # Zobrazení stavu načítání
+    if st.session_state.is_loading:
+        loading_message = display_loading_message(
+        )  # Zde by měl být kód pro zobrazení spinneru
+
+    # Zobrazení dat o ceně
+    if st.session_state.quote_data:
+        # Záhlaví s informacemi o vybraném nástroji
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            st.subheader(
+                f"{st.session_state.quote_data.get('name', st.session_state.selected_symbol)}"
             )
+            st.caption(f"Symbol: {st.session_state.selected_symbol}")
+        with col2:
+            market_status = get_market_status(st.session_state.quote_data)
+            display_market_status(market_status)
 
-# Patička
-st.markdown("---")
-st.caption(
-    "Data poskytována službou [Twelve Data](https://twelvedata.com/) | AI asistent powered by [Google Gemini](https://ai.google.dev/)"
-)
-st.caption("© 2023-2025 Finanční Dashboard")
+        # Zobrazení indikátorů ceny
+        display_price_indicators(st.session_state.quote_data)
+
+        # Zobrazení detailních informací
+        display_quote_details(st.session_state.quote_data)
+
+        # Zobrazení grafu
+        if st.session_state.historical_data is not None and not st.session_state.historical_data.empty:
+            # Vytvoření grafu
+            chart_title = f"Vývoj ceny {st.session_state.selected_symbol} ({st.session_state.selected_timeframe})"
+            fig = create_ohlc_chart(st.session_state.historical_data,
+                                    title=chart_title)
+            if fig:
+                st.plotly_chart(fig, use_container_width=True)
+            else:
+                display_no_data_message(
+                )  # Zde by měl být kód pro zobrazení zprávy
+        else:
+            display_no_data_message(
+            )  # Zde by měl být kód pro zobrazení zprávy
+    else:
+        # Pokud nejsou data o ceně, ale není aktivní načítání a API je OK, zobraz zprávu
+        if not st.session_state.is_loading and api_status:
+            display_no_data_message(
+            )  # Zde by měl být kód pro zobrazení zprávy
+
+    # Odstraníme indikátor načítání po dokončení
+    # Potenciálně problematické místo - musí být voláno jen jednou a ve správný čas
+    if 'loading_message' in locals() and not st.session_state.is_loading:
+        try:
+            loading_message.empty()
+        except Exception as e:
+            # Logování chyby by bylo vhodné, pokud by .empty() selhalo
+            # print(f"Error emptying loading message: {e}")
+            pass
+
+    # --- Přesunuto sem, aby se zobrazilo i když se nenačtou data ---
+    # ----------------------------- Gemini AI asistent -----------------------------
+
+    # Kontrola Gemini API klíče
+    gemini_api_status = check_gemini_api_key()
+
+    st.markdown("---")
+    st.header("💬 Gemini AI Asistent")
+
+    if not gemini_api_status:
+        st.warning("""
+        API klíč pro Gemini nebyl nalezen nebo nefunguje. Prosím, nastavte platný API klíč jako proměnnou prostředí.
+
+        ```
+        GEMINI_API_KEY=váš_api_klíč
