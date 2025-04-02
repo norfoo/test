@@ -413,7 +413,7 @@ if 'loading_message' in locals() and not st.session_state.is_loading:
 # ----------------------------- Gemini AI asistent -----------------------------
 
 # Kontrola Gemini API klíče
-gemini_api_status = check_gemini_api_key()
+# gemini_api_status = check_gemini_api_key()
 
 # st.markdown("---")
 # st.header("💬 Gemini AI Asistent")
