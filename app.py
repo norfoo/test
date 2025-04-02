@@ -690,7 +690,7 @@ else:  # app_mode == "📈 Dashboard"
                                     avatar="🤖").write(message["content"])
 
             # Vstupní pole pro chat
-            user_input = st.chat_input("Napište zprávu...")
+            user_input = st.chat_input("Napište zprávu...", key="chat_input_main")
             if user_input:
                 # Přidání zprávy uživatele do historie
                 st.session_state.chat_messages.append({
