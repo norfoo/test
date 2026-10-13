@@ -9,11 +9,10 @@ Vytvoří vedle složky bota složku PRO_GITHUB, ve které bude:
   data_01.zip ...- velké soubory (data, výsledky), každý zip < 24 MB
   obsah.txt      - seznam všech souborů a velikostí
 Originální soubory se nijak nemění.
-Vynechá: .env, session soubory, klíče, venv, __pycache__, .git, logy.
-Telegram tokeny nalezené v kódu v kopii nahradí textem REDACTED.
+Zabalí všechno včetně .env, klíčů a tokenů, nic nemaže ani nenahrazuje.
+Vynechá jen technický balast: venv, __pycache__, .git, cache.
 """
 import os
-import re
 import sys
 import zipfile
 from pathlib import Path
@@ -22,22 +21,14 @@ LIMIT = 24 * 1024 * 1024          # cílová velikost jednoho zipu
 VELKY = 1 * 1024 * 1024           # soubor nad 1 MB jde do dat
 SKIP_DIRS = {".git", "venv", ".venv", "env", "__pycache__", "node_modules",
              ".idea", ".vscode", "PRO_GITHUB", ".mypy_cache", ".pytest_cache"}
-SKIP_EXT = {".pyc", ".pyo", ".log", ".session", ".session-journal", ".key",
-            ".pem", ".p12", ".pfx", ".exe", ".dll"}
+SKIP_EXT = {".pyc", ".pyo"}
 TEXT_EXT = {".py", ".md", ".txt", ".toml", ".yaml", ".yml", ".ini", ".cfg",
             ".json", ".mq5", ".mqh", ".mq4", ".pine", ".sh", ".bat", ".ps1",
             ".sql", ".html", ".js", ".csv"}
-TG_TOKEN = re.compile(rb"\b\d{8,10}:[A-Za-z0-9_-]{35}\b")
-PODEZRELE = re.compile(rb"(password|passwd|heslo|api_key|apikey|secret)\s*[=:]\s*[\"'][^\"']{4,}[\"']", re.I)
 
 
-def je_tajny(p: Path) -> bool:
-    n = p.name.lower()
-    if n.startswith(".env") and n != ".env.example":
-        return True
-    if p.suffix.lower() in SKIP_EXT:
-        return True
-    return any(k in n for k in ("credential", "secret", "token"))
+def je_balast(p: Path) -> bool:
+    return p.suffix.lower() in SKIP_EXT
 
 
 def main():
@@ -47,7 +38,7 @@ def main():
     for f in out.glob("*"):
         f.unlink()
 
-    kod, data, vynechano, varovani = [], [], [], []
+    kod, data = [], []
     for dirpath, dirnames, filenames in os.walk(root):
         dirnames[:] = [d for d in dirnames if d not in SKIP_DIRS]
         for name in filenames:
@@ -55,8 +46,7 @@ def main():
             rel = p.relative_to(root)
             if p.resolve() == Path(__file__).resolve():
                 continue
-            if je_tajny(p):
-                vynechano.append(rel)
+            if je_balast(p):
                 continue
             size = p.stat().st_size
             if size <= VELKY and p.suffix.lower() in TEXT_EXT:
@@ -69,13 +59,7 @@ def main():
     # kód
     with zipfile.ZipFile(out / "kod.zip", "w", zipfile.ZIP_DEFLATED, compresslevel=9) as z:
         for rel, _ in kod:
-            obsah = (root / rel).read_bytes()
-            if TG_TOKEN.search(obsah):
-                obsah = TG_TOKEN.sub(b"REDACTED_TELEGRAM_TOKEN", obsah)
-                varovani.append(f"{rel}: Telegram token nahrazen v kopii")
-            if PODEZRELE.search(obsah):
-                varovani.append(f"{rel}: možná heslo/klíč přímo v kódu, zkontroluj")
-            z.writestr(str(rel).replace("\\", "/"), obsah)
+            z.write(root / rel, str(rel).replace("\\", "/"))
 
     # data - od nejmenších, plní zipy do limitu, příliš velké dělí na části
     data.sort(key=lambda x: x[1])
@@ -119,20 +103,10 @@ def main():
         f.write("\n=== DATA ===\n")
         for rel, size in sorted(data):
             f.write(f"{size/1024/1024:10.1f} MB  {rel}\n")
-        f.write("\n=== VYNECHANO (tajne) ===\n")
-        for rel in vynechano:
-            f.write(f"  {rel}\n")
-        f.write("\n=== VAROVANI ===\n")
-        for v in varovani:
-            f.write(f"  {v}\n")
 
     print(f"\nHotovo -> {out}")
     for f in sorted(out.iterdir()):
         print(f"  {f.name:22s} {f.stat().st_size/1024/1024:6.1f} MB")
-    if vynechano:
-        print(f"\nVynecháno {len(vynechano)} tajných souborů (.env, session...), to je správně.")
-    for v in varovani:
-        print("POZOR:", v)
     print("\nNahraj na GitHub VŠECHNY soubory ze složky PRO_GITHUB.")
 
 
